@@ -286,7 +286,7 @@ Date,Material,Threshold_Power,Power_Deposition,Rate,Thickness_nm,Crystal_Monitor
 07/03/2023,Chromium,5.0,8.4,0.25,5.0,92.09
 07/03/2023,Gold,52.0,65.0,0.4,50.0,91.38
 07/05/2023,Chromium,10.0,13.0,0.3,22.0,91.09
-07/05/2023,Chromium,10.0,13.0,0.30000000000000004,150.0,90.8
+07/05/2023,Chromium,10.0,13.0,0.3,150.0,90.8
 07/05/2023,Chromium,15.0,18.0,0.2,5.0,90.64
 07/05/2023,Gold,49.0,64.0,0.4,50.0,90.0
 07/06/2023,Gold,50.0,64.0,0.4,50.0,89.36
@@ -651,3 +651,4 @@ Date,Material,Threshold_Power,Power_Deposition,Rate,Thickness_nm,Crystal_Monitor
 02/29/2024,Gold,30.0,36.0,0.45,40.0,76.85
 02/29/2024,Silver,8.5,14.0,0.8,100.0,76.2
 03/01/2024,Silver,0.5,14.0,0.6,100.0,73.1
+06/24/2025,Chromium,0.0,0.0,0.0,0.0,0.0
