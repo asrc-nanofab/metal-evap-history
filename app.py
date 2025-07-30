@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date, datetime
-from validation import validate_and_show_errors
 import time
 # Remove or comment out the wide layout
 # st.set_page_config(layout="wide")
@@ -146,13 +145,7 @@ elif page == "Add Entry":
                 "Crystal_Monitor": crystal_monitor,
             }
 
-            # Validate before saving
-            is_valid, validated_data = validate_and_show_errors(row_dict)
-
-            if is_valid:
-                # Convert validated data back to dict for your existing function
-                validated_dict = validated_data.model_dump()
-                append_row_to_csv(validated_dict)
+            append_row_to_csv(row_dict)
 
 elif page == "Edit Data":
     st.title("Edit Deposition Data")
