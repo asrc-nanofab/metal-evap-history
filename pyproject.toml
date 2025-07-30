@@ -1,0 +1,13 @@
+[project]
+name = "metal-evap-history"
+version = "0.1.0"
+description = "Metal evaporation deposition data tracking and visualization"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.46.0",
+    "pandas>=2.3.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.3.0",
+    "pydantic>=2.0.0",
+]
+

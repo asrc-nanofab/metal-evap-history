@@ -1,61 +1,10 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-import re
 from datetime import date, datetime
-
+from validation import validate_and_show_errors
 # Remove or comment out the wide layout
 # st.set_page_config(layout="wide")
-
-
-# --- Data Cleaning Script ---
-def clean_and_save_csv():
-    df = pd.read_csv("data/Ebeam Deposition Powers - Metal Evap User Run Data.csv")
-    # Standardize column names
-    df.columns = df.columns.str.strip()
-    df.columns = df.columns.str.replace(r"[\s:()%]", "_", regex=True)
-    df.columns = df.columns.str.replace(r"_+", "_", regex=True)
-    df.columns = df.columns.str.strip("_")
-
-    # Replace all forms of N/A with np.nan
-    df = df.replace({r"(?i)^(n/a|na|\?|crystal failed|)$": np.nan}, regex=True)
-
-    # Identify numeric columns (except Material and Date)
-    non_numeric_cols = ["Material", "Date"]
-    numeric_cols = [col for col in df.columns if col not in non_numeric_cols]
-
-    # Remove units and symbols, handle ranges and multi-values
-    def clean_numeric(val):
-        if pd.isna(val):
-            return np.nan
-        val = str(val).strip()
-        # Remove units (%, nm, ma, etc.)
-        val = re.sub(r"[^0-9.\-]", "", val)
-        # Handle ranges (e.g., 10-12)
-        if "-" in val:
-            parts = [float(x) for x in val.split("-") if x]
-            if parts:
-                return np.mean(parts)
-            else:
-                return np.nan
-        try:
-            return float(val)
-        except ValueError:
-            return np.nan
-
-    for col in numeric_cols:
-        df[col] = df[col].apply(clean_numeric)
-
-    # Drop rows with any non-numeric or missing values in numeric columns
-    df_clean = df.dropna(subset=numeric_cols, how="any")
-
-    # Save cleaned CSV
-    df_clean.to_csv("data/Ebeam_Deposition_Powers_CLEAN.csv", index=False)
-
-
-# Run cleaning script (uncomment to run as a script)
-# clean_and_save_csv()
 
 
 def load_clean_data():
@@ -154,11 +103,19 @@ elif page == "Add Entry":
         # Use normalized material names for dropdown
         materials = sorted(df["Material"].unique())
         material = st.selectbox("Material", materials)
-        threshold_power = st.number_input("Threshold Power", min_value=0.0, step=0.01)
-        deposition_power = st.number_input("Deposition Power", min_value=0.0, step=0.01)
-        rate = st.number_input("Rate", min_value=0.0, step=0.01)
-        thickness = st.number_input("Thickness (nm)", min_value=0.0, step=0.01)
-        crystal_monitor = st.number_input("Crystal Monitor", min_value=0.0, step=0.01)
+        threshold_power = st.number_input(
+            "Threshold Power (%)", min_value=0.0, max_value=100.0, step=0.01
+        )
+        deposition_power = st.number_input(
+            "Deposition Power (%)", min_value=0.0, max_value=100.0, step=0.01
+        )
+        rate = st.number_input("Rate (A/s)", min_value=0.0, max_value=100.0, step=0.01)
+        thickness = st.number_input(
+            "Thickness (per xTal Monitor)", min_value=0.0, max_value=10000.0, step=0.01
+        )
+        crystal_monitor = st.number_input(
+            "Crystal Monitor", min_value=0.0, max_value=100.0, step=0.01
+        )
         submitted = st.form_submit_button("Add Entry")
         if submitted:
             row_dict = {
@@ -170,4 +127,11 @@ elif page == "Add Entry":
                 "Thickness_nm": thickness,
                 "Crystal_Monitor": crystal_monitor,
             }
-            append_row_to_csv(row_dict)
+
+            # Validate before saving
+            is_valid, validated_data = validate_and_show_errors(row_dict)
+
+            if is_valid:
+                # Convert validated data back to dict for your existing function
+                validated_dict = validated_data.model_dump()
+                append_row_to_csv(validated_dict)
