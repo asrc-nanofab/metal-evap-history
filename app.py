@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date, datetime
 from validation import validate_and_show_errors
+import time
 # Remove or comment out the wide layout
 # st.set_page_config(layout="wide")
 
@@ -33,8 +34,25 @@ def append_row_to_csv(row_dict):
     st.success("Entry added! Reload the View Data page to see the update.")
 
 
+def save_edited_data_to_csv(edited_df):
+    """Save the entire edited DataFrame back to CSV."""
+    try:
+        # Format dates consistently
+        if "Date" in edited_df.columns:
+            edited_df["Date"] = pd.to_datetime(
+                edited_df["Date"], errors="coerce"
+            ).dt.strftime("%m/%d/%Y")
+
+        # Save to CSV
+        edited_df.to_csv("data/Ebeam_Deposition_Powers_CLEAN.csv", index=False)
+        return True
+    except Exception as e:
+        st.error(f"Error saving data: {e}")
+        return False
+
+
 # --- Multipage App ---
-page = st.sidebar.radio("Choose a page", ["View Data", "Add Entry"])
+page = st.sidebar.radio("Choose a page", ["View Data", "Add Entry", "Edit Data"])
 
 df = load_clean_data()
 
@@ -135,3 +153,146 @@ elif page == "Add Entry":
                 # Convert validated data back to dict for your existing function
                 validated_dict = validated_data.model_dump()
                 append_row_to_csv(validated_dict)
+
+elif page == "Edit Data":
+    st.title("Edit Deposition Data")
+
+    st.info(
+        "💡 **Instructions**: Click on any cell to edit it. Add or delete rows using the controls."
+    )
+    st.warning(
+        "⚠️ **Important**: Changes will overwrite your CSV file. Consider making a backup first."
+    )
+
+    # Create a copy for editing to avoid modifying the original
+    df_to_edit = df.copy()
+
+    # Configure editable columns
+    edited_df = st.data_editor(
+        df_to_edit,
+        use_container_width=True,
+        num_rows="dynamic",  # Allow adding/deleting rows
+        column_config={
+            "Date": st.column_config.DateColumn(
+                "Date",
+                help="Entry date",
+                format="MM/DD/YYYY",
+            ),
+            "Material": st.column_config.SelectboxColumn(
+                "Material",
+                help="Select material type",
+                options=sorted(df["Material"].unique()),
+                required=True,
+            ),
+            "Threshold_Power": st.column_config.NumberColumn(
+                "Threshold Power (%)",
+                help="Threshold power percentage",
+                min_value=0.0,
+                max_value=100.0,
+                step=0.01,
+                format="%.2f",
+            ),
+            "Power_Deposition": st.column_config.NumberColumn(
+                "Deposition Power (%)",
+                help="Power used for deposition",
+                min_value=0.0,
+                max_value=100.0,
+                step=0.01,
+                format="%.2f",
+            ),
+            "Rate": st.column_config.NumberColumn(
+                "Rate (A/s)",
+                min_value=0.0,
+                max_value=100.0,
+                step=0.01,
+                format="%.2f",
+            ),
+            "Thickness_nm": st.column_config.NumberColumn(
+                "Thickness (per xTal Monitor)",
+                min_value=0.0,
+                max_value=10000.0,
+                step=0.01,
+                format="%.2f",
+            ),
+            "Crystal_Monitor": st.column_config.NumberColumn(
+                "Crystal Monitor",
+                min_value=0.0,
+                max_value=100.0,
+                step=0.01,
+                format="%.2f",
+            ),
+        },
+        key="data_editor",
+    )
+
+    # Show changes detection
+    changes_made = not edited_df.equals(df_to_edit)
+
+    if changes_made:
+        st.warning("🔄 You have unsaved changes!")
+
+        # Show what changed (simple version)
+        with st.expander("View Changes", expanded=False):
+            # Row count changes
+            if len(edited_df) != len(df_to_edit):
+                st.write(f"📊 Row count: {len(df_to_edit)} → {len(edited_df)}")
+
+            # Content changes
+            if len(edited_df) == len(df_to_edit):
+                # Same number of rows, so check for content changes
+                try:
+                    # Find which rows are different
+                    comparison = edited_df.compare(
+                        df_to_edit, names=("updated", "original")
+                    )
+                    if not comparison.empty:
+                        st.write("✏️ **Modified cells detected:**")
+                        st.dataframe(comparison, use_container_width=True)
+                except Exception:
+                    st.write("✏️ Cell modifications detected")
+
+            # Summary
+            st.write(
+                "💡 Click 'Save Changes' to apply these modifications to your CSV file"
+            )
+
+    # Save controls
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("💾 Save Changes", type="primary", disabled=not changes_made):
+            # Optional: Validate with Pydantic here if you want
+            if save_edited_data_to_csv(edited_df):
+                st.success("✅ Changes saved successfully!")
+                st.info("🔄 Refresh the page to see updates on other pages.")
+                time.sleep(1)  # Brief pause so user sees the success message
+                st.rerun()
+            else:
+                st.error("❌ Failed to save changes!")
+
+    with col2:
+        if st.button("🔄 Discard Changes", disabled=not changes_made):
+            st.rerun()
+
+    with col3:
+        # Export current view to CSV
+        csv_data = edited_df.to_csv(index=False)
+        st.download_button(
+            label="📄 Download as CSV",
+            data=csv_data,
+            file_name=f"deposition_data_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+
+    # Display some stats
+    st.markdown("---")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Entries", len(edited_df))
+    with col2:
+        st.metric("Materials", edited_df["Material"].nunique())
+    with col3:
+        if changes_made:
+            st.metric("Unsaved Changes", "Yes", delta="⚠️")
+        else:
+            st.metric("Unsaved Changes", "No", delta="✅")
