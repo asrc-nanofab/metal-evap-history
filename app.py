@@ -151,141 +151,279 @@ elif page == "Edit Data":
     st.title("Edit Deposition Data")
 
     st.info(
-        "💡 **Instructions**: Click on any cell to edit it. Add or delete rows using the controls."
-    )
-    st.warning(
-        "⚠️ **Important**: Changes will overwrite your CSV file. Consider making a backup first."
+        "💡 **Instructions**: View all data below, then select a specific row to edit."
     )
 
-    # Create a copy for editing to avoid modifying the original
-    df_to_edit = df.copy()
+    # Download backup before making any changes
+    st.subheader("📥 Backup Data")
+    csv_backup = df.to_csv(index=False)
+    st.download_button(
+        label="📄 Download Current Data as Backup",
+        data=csv_backup,
+        file_name=f"deposition_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv",
+        help="Download your data before making any edits",
+    )
 
-    # Configure editable columns
-    edited_df = st.data_editor(
-        df_to_edit,
-        use_container_width=True,
-        num_rows="dynamic",  # Allow adding/deleting rows
-        column_config={
-            "Date": st.column_config.DateColumn(
-                "Date",
-                help="Entry date",
-                format="MM/DD/YYYY",
-            ),
-            "Material": st.column_config.SelectboxColumn(
+    st.markdown("---")
+
+    # Display full dataframe (read-only)
+    st.subheader("📊 All Deposition Data")
+    st.info("This table is read-only. Select a row below to edit it.")
+
+    # Add row numbers for easier selection
+    df_display = df.copy()
+    df_display.index = df_display.index + 1  # Start row numbers from 1
+    st.dataframe(df_display, use_container_width=True, height=400)
+
+    st.markdown("---")
+
+    # Row selection
+    st.subheader("✏️ Select Row to Edit")
+
+    if len(df) == 0:
+        st.warning("No data available to edit.")
+    else:
+        # Simple number input for row selection
+        selected_row_num = st.number_input(
+            "Enter row number to edit:",
+            min_value=1,
+            max_value=len(df),
+            value=1,
+            step=1,
+            help=f"Choose a row number between 1 and {len(df)}",
+        )
+
+        # Convert to 0-based index
+        selected_row_idx = selected_row_num - 1
+
+        # Get the selected row data
+        selected_row = df.iloc[selected_row_idx].copy()
+
+        # Show which row is selected
+        date_str = (
+            pd.to_datetime(selected_row["Date"]).strftime("%m/%d/%Y")
+            if pd.notna(selected_row["Date"])
+            else "No Date"
+        )
+        material = (
+            selected_row["Material"]
+            if pd.notna(selected_row["Material"])
+            else "No Material"
+        )
+
+        st.info(f"📍 **Selected**: Row {selected_row_num} - {date_str} - {material}")
+
+        st.markdown("---")
+        st.subheader(f"🔧 Editing Row {selected_row_num}")
+
+        # Create two columns: Original vs New values
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**📋 Original Values**")
+            # Display original values (read-only)
+            orig_date = (
+                pd.to_datetime(selected_row["Date"]).strftime("%m/%d/%Y")
+                if pd.notna(selected_row["Date"])
+                else ""
+            )
+            st.text_input("Date", value=orig_date, disabled=True, key="orig_date")
+            st.text_input(
                 "Material",
-                help="Select material type",
-                options=sorted(df["Material"].unique()),
-                required=True,
-            ),
-            "Threshold_Power": st.column_config.NumberColumn(
+                value=selected_row["Material"],
+                disabled=True,
+                key="orig_material",
+            )
+            st.number_input(
                 "Threshold Power (%)",
-                help="Threshold power percentage",
-                min_value=0.0,
-                max_value=100.0,
-                step=0.01,
-                format="%.2f",
-            ),
-            "Power_Deposition": st.column_config.NumberColumn(
+                value=float(selected_row["Threshold_Power"]),
+                disabled=True,
+                key="orig_threshold",
+            )
+            st.number_input(
                 "Deposition Power (%)",
-                help="Power used for deposition",
+                value=float(selected_row["Power_Deposition"]),
+                disabled=True,
+                key="orig_deposition",
+            )
+            st.number_input(
+                "Rate (A/s)",
+                value=float(selected_row["Rate"]),
+                disabled=True,
+                key="orig_rate",
+            )
+            st.number_input(
+                "Thickness (per xTal Monitor)",
+                value=float(selected_row["Thickness_nm"]),
+                disabled=True,
+                key="orig_thickness",
+            )
+            st.number_input(
+                "Crystal Monitor",
+                value=float(selected_row["Crystal_Monitor"]),
+                disabled=True,
+                key="orig_crystal",
+            )
+
+        with col2:
+            st.markdown("**✏️ New Values**")
+            # Editable fields with original values as defaults
+
+            # Date field
+            try:
+                orig_date_obj = pd.to_datetime(selected_row["Date"]).date()
+            except:  # noqa: E722
+                orig_date_obj = date.today()
+
+            new_date = st.date_input(
+                "Date",
+                value=orig_date_obj,
+                key="new_date",
+                help="Select the new date",
+            )
+
+            # Material dropdown with current materials + ability to type new ones
+            current_materials = sorted(df["Material"].unique().tolist())
+            current_material_idx = (
+                current_materials.index(selected_row["Material"])
+                if selected_row["Material"] in current_materials
+                else 0
+            )
+
+            new_material = st.selectbox(
+                "Material",
+                options=current_materials,
+                index=current_material_idx,
+                key="new_material",
+            )
+
+            # Numeric fields with validation
+            new_threshold = st.number_input(
+                "Threshold Power (%)",
                 min_value=0.0,
                 max_value=100.0,
+                value=float(selected_row["Threshold_Power"]),
                 step=0.01,
-                format="%.2f",
-            ),
-            "Rate": st.column_config.NumberColumn(
+                key="new_threshold",
+            )
+
+            new_deposition = st.number_input(
+                "Deposition Power (%)",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(selected_row["Power_Deposition"]),
+                step=0.01,
+                key="new_deposition",
+            )
+
+            new_rate = st.number_input(
                 "Rate (A/s)",
                 min_value=0.0,
                 max_value=100.0,
+                value=float(selected_row["Rate"]),
                 step=0.01,
-                format="%.2f",
-            ),
-            "Thickness_nm": st.column_config.NumberColumn(
+                key="new_rate",
+            )
+
+            new_thickness = st.number_input(
                 "Thickness (per xTal Monitor)",
                 min_value=0.0,
                 max_value=10000.0,
+                value=float(selected_row["Thickness_nm"]),
                 step=0.01,
-                format="%.2f",
-            ),
-            "Crystal_Monitor": st.column_config.NumberColumn(
+                key="new_thickness",
+            )
+
+            new_crystal = st.number_input(
                 "Crystal Monitor",
                 min_value=0.0,
                 max_value=100.0,
+                value=float(selected_row["Crystal_Monitor"]),
                 step=0.01,
-                format="%.2f",
-            ),
-        },
-        key="data_editor",
-    )
-
-    # Show changes detection
-    changes_made = not edited_df.equals(df_to_edit)
-
-    if changes_made:
-        st.warning("🔄 You have unsaved changes!")
-
-        # Show what changed (simple version)
-        with st.expander("View Changes", expanded=False):
-            # Row count changes
-            if len(edited_df) != len(df_to_edit):
-                st.write(f"📊 Row count: {len(df_to_edit)} → {len(edited_df)}")
-
-            # Content changes
-            if len(edited_df) == len(df_to_edit):
-                # Same number of rows, so check for content changes
-                try:
-                    # Find which rows are different
-                    comparison = edited_df.compare(
-                        df_to_edit, names=("updated", "original")
-                    )
-                    if not comparison.empty:
-                        st.write("✏️ **Modified cells detected:**")
-                        st.dataframe(comparison, use_container_width=True)
-                except Exception:
-                    st.write("✏️ Cell modifications detected")
-
-            # Summary
-            st.write(
-                "💡 Click 'Save Changes' to apply these modifications to your CSV file"
+                key="new_crystal",
             )
 
-    # Save controls
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("💾 Save Changes", type="primary", disabled=not changes_made):
-            # Optional: Validate with Pydantic here if you want
-            if save_edited_data_to_csv(edited_df):
-                st.success("✅ Changes saved successfully!")
-                st.info("🔄 Refresh the page to see updates on other pages.")
-                time.sleep(1)  # Brief pause so user sees the success message
-                st.rerun()
-            else:
-                st.error("❌ Failed to save changes!")
-
-    with col2:
-        if st.button("🔄 Discard Changes", disabled=not changes_made):
-            st.rerun()
-
-    with col3:
-        # Export current view to CSV
-        csv_data = edited_df.to_csv(index=False)
-        st.download_button(
-            label="📄 Download as CSV",
-            data=csv_data,
-            file_name=f"deposition_data_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
+        # Check if any changes were made
+        changes_detected = (
+            new_date != orig_date_obj
+            or new_material != selected_row["Material"]
+            or new_threshold != float(selected_row["Threshold_Power"])
+            or new_deposition != float(selected_row["Power_Deposition"])
+            or new_rate != float(selected_row["Rate"])
+            or new_thickness != float(selected_row["Thickness_nm"])
+            or new_crystal != float(selected_row["Crystal_Monitor"])
         )
 
-    # Display some stats
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Total Entries", len(edited_df))
-    with col2:
-        st.metric("Materials", edited_df["Material"].nunique())
-    with col3:
-        if changes_made:
-            st.metric("Unsaved Changes", "Yes", delta="⚠️")
-        else:
-            st.metric("Unsaved Changes", "No", delta="✅")
+        # Show changes summary
+        if changes_detected:
+            st.markdown("---")
+            st.warning("🔄 **Changes Detected:**")
+
+            with st.expander("View Specific Changes", expanded=True):
+                if new_date != orig_date_obj:
+                    st.write(f"📅 Date: {orig_date} → {new_date.strftime('%m/%d/%Y')}")
+                if new_material != selected_row["Material"]:
+                    st.write(
+                        f"🧪 Material: {selected_row['Material']} → {new_material}"
+                    )
+                if new_threshold != float(selected_row["Threshold_Power"]):
+                    st.write(
+                        f"⚡ Threshold Power: {selected_row['Threshold_Power']}% → {new_threshold}%"
+                    )
+                if new_deposition != float(selected_row["Power_Deposition"]):
+                    st.write(
+                        f"⚡ Deposition Power: {selected_row['Power_Deposition']}% → {new_deposition}%"
+                    )
+                if new_rate != float(selected_row["Rate"]):
+                    st.write(f"📈 Rate: {selected_row['Rate']} A/s → {new_rate} A/s")
+                if new_thickness != float(selected_row["Thickness_nm"]):
+                    st.write(
+                        f"📏 Thickness: {selected_row['Thickness_nm']} → {new_thickness}"
+                    )
+                if new_crystal != float(selected_row["Crystal_Monitor"]):
+                    st.write(
+                        f"💎 Crystal Monitor: {selected_row['Crystal_Monitor']} → {new_crystal}"
+                    )
+
+        # Action buttons
+        st.markdown("---")
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if st.button(
+                "💾 Save Changes", type="primary", disabled=not changes_detected
+            ):
+                # Create new row data - direct save, no validation
+                new_row_data = {
+                    "Date": new_date.strftime("%m/%d/%Y"),
+                    "Material": new_material,
+                    "Threshold_Power": new_threshold,
+                    "Power_Deposition": new_deposition,
+                    "Rate": new_rate,
+                    "Thickness_nm": new_thickness,
+                    "Crystal_Monitor": new_crystal,
+                }
+
+                # Update the dataframe
+                df_updated = df.copy()
+                for col, value in new_row_data.items():
+                    df_updated.at[selected_row_idx, col] = value
+
+                # Save to CSV directly
+                if save_edited_data_to_csv(df_updated):
+                    st.success(f"✅ Row {selected_row_idx + 1} updated successfully!")
+                    st.info("🔄 Refresh the page to see all updates.")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to save changes!")
+
+        with col2:
+            st.info(
+                "💡 **To discard changes:** Navigate away or select a different row"
+            )
+
+        with col3:
+            # Show row info
+            st.metric("Editing Row", f"{selected_row_idx + 1} of {len(df)}")
