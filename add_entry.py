@@ -24,10 +24,27 @@ def add_entry_page():
         )
         rate = st.number_input("Rate (A/s)", min_value=0.0, max_value=100.0, step=0.01)
         thickness = st.number_input(
-            "Thickness (per xTal Monitor)", min_value=0.0, max_value=10000.0, step=0.01
+            "Thickness (nm)",
+            min_value=0.0,
+            max_value=10000.0,
+            step=0.01,
+        )
+        measured = st.number_input(
+            "Measured Thickness (nm)", min_value=0.0, max_value=10000.0, step=0.01
         )
         crystal_monitor = st.number_input(
             "Crystal Monitor", min_value=0.0, max_value=100.0, step=0.01
+        )
+        # notes = st.text_input(
+        #     "Notes",
+        #     value="",
+        #     placeholder="Optional notes or comments",
+        #     help="Enter any additional notes about this deposition",
+        # )
+        notes = st.text_area(
+            "Notes",
+            height=100,
+            placeholder="Enter detailed comments here...",
         )
         submitted = st.form_submit_button("Add Entry")
         if submitted:
@@ -38,6 +55,8 @@ def add_entry_page():
                 "Power_Deposition": deposition_power,
                 "Rate": rate,
                 "Thickness_nm": thickness,
+                "Measured_Thickness_nm": measured,
                 "Crystal_Monitor": crystal_monitor,
+                "Notes": notes,
             }
             append_row_to_csv(row_dict)

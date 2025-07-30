@@ -61,4 +61,4 @@ def view_data_page():
     table_df = filtered.reset_index(drop=True).copy()
     if "Date" in table_df.columns:
         table_df["Date"] = table_df["Date"].dt.strftime("%m/%d/%Y")
-    st.dataframe(table_df, use_container_width=True)
+    st.dataframe(table_df, use_container_width=True, hide_index=True)

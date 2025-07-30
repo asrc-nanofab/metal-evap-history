@@ -7,7 +7,7 @@ from add_entry import add_entry_page
 from edit_data import edit_data_page
 
 # Page configuration
-st.set_page_config(page_title="Metal Evaporation History")
+st.set_page_config(page_title="Metal Evaporation History")  # , layout="wide")
 
 # Sidebar navigation
 st.sidebar.title("Navigation")

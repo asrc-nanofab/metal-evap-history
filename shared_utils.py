@@ -12,6 +12,8 @@ def load_clean_data():
     df["Material"] = df["Material"].astype(str).str.strip().str.lower().str.title()
     # Remove rows with invalid or blank material names
     df = df[df["Material"].notna() & (df["Material"].str.strip() != "")]
+    # Drop Crystal Monitor column
+    df = df.drop("Crystal_Monitor", axis=1, errors="ignore")
     return df
 
 
