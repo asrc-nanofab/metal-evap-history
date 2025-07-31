@@ -8,6 +8,8 @@ def load_clean_data():
     df = pd.read_csv("data/Ebeam_Deposition_Powers_CLEAN.csv")
     # Ensure Date is datetime
     df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    # Convert back to MM/DD/YYYY string format for display
+    df["Date"] = df["Date"].dt.strftime("%m/%d/%Y")
     # Normalize Material: strip spaces, lower, then title case
     df["Material"] = df["Material"].astype(str).str.strip().str.lower().str.title()
     # Remove rows with invalid or blank material names

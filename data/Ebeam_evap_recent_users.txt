@@ -1,0 +1,94 @@
+equipment	date	role	active	last name	first name	member
+Ebeam_Evap_O8E	2022-06-07 10:39:42	instructor	true	Roberts	Samantha	sroberts@gc.cuny.edu
+Ebeam_Evap_O8E	2022-06-07 10:39:42	user	true	Roberts	Samantha	sroberts@gc.cuny.edu
+Ebeam_Evap_O8E	2022-06-07 10:39:43	engineer	true	Roberts	Samantha	sroberts@gc.cuny.edu
+Ebeam_Evap_O8E	2022-07-12 12:03:09	user	true	Fabre	Guy	gfabre@gc.cuny.edu
+Ebeam_Evap_O8E	2022-07-12 12:03:12	engineer	true	Fabre	Guy	gfabre@gc.cuny.edu
+Ebeam_Evap_O8E	2022-07-12 12:03:12	instructor	true	Fabre	Guy	gfabre@gc.cuny.edu
+Ebeam_Evap_O8E	2022-08-05 08:59:59	user	true	Liu	Kai	kliu3@stevens.edu
+Ebeam_Evap_O8E	2022-08-05 09:14:33	user	true	Liu	Jiaxing	jliu111@stevens.edu
+Ebeam_Evap_O8E	2022-09-01 13:32:32	user	true	Flatt	Graydon	gf2432@columbia.edu
+Ebeam_Evap_O8E	2022-10-31 16:26:27	user	true	Chen	Tian-Yue	tc3836@nyu.edu
+Ebeam_Evap_O8E	2022-11-01 13:52:27	user	true	Jamalzadeh	Moeid	mj2772@nyu.edu
+Ebeam_Evap_O8E	2022-11-02 14:48:02	user	true	WANG	HAO	hao.wang@nyulangone.org
+Ebeam_Evap_O8E	2022-12-05 10:36:26	user	true	Du	Yifan	ydu27@stevens.edu
+Ebeam_Evap_O8E	2022-12-05 10:39:14	user	true	Kaaliveetil	Sreerag	sk2993@njit.edu
+Ebeam_Evap_O8E	2022-12-07 14:46:48	user	true	Kolmakov	German	gkolmakov@citytech.cuny.edu
+Ebeam_Evap_O8E	2022-12-27 10:56:53	user	true	Pandey	Ashish	ashish.pandey@nyulangone.org
+Ebeam_Evap_O8E	2023-01-23 15:11:39	user	true	Sharma	Addhyaya	asharma007@citymail.cuny.edu
+Ebeam_Evap_O8E	2023-02-28 12:18:11	engineer	true	Elhalabi	Salam	selhalabi@gc.cuny.edu
+Ebeam_Evap_O8E	2023-02-28 12:18:11	instructor	true	Elhalabi	Salam	selhalabi@gc.cuny.edu
+Ebeam_Evap_O8E	2023-02-28 12:18:11	user	true	Elhalabi	Salam	selhalabi@gc.cuny.edu
+Ebeam_Evap_O8E	2023-03-15 11:48:03	user	true	kaurav	Rishabh	rkaurav@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-03-23 12:38:23	user	true	Datta	Biswajit	bdatta@ccny.cuny.edu
+Ebeam_Evap_O8E	2023-04-05 11:37:30	user	true	Chaitanya	Shriddha	sc4262@columbia.edu
+Ebeam_Evap_O8E	2023-04-18 15:03:58	user	true	Adak	Pratap Chandra	padak@ccny.cuny.edu
+Ebeam_Evap_O8E	2023-05-03 15:57:11	user	true	Yu	Sichao	syu2@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-05-05 11:56:09	user	true	De Luca	Federico	federico.deluca80@gc.cuny.edu
+Ebeam_Evap_O8E	2023-05-12 13:59:45	user	true	Xiao	Licheng	lxiao10@stevens.edu
+Ebeam_Evap_O8E	2023-06-15 12:16:15	user	true	Liu	Peter	pliu26@stevens.edu
+Ebeam_Evap_O8E	2023-06-15 16:28:57	user	true	Marina	Nicholas	nmarina@stevens.edu
+Ebeam_Evap_O8E	2023-06-22 14:24:13	user	true	Tsai	Cheng-Chia	chengchiatsai@gmail.com
+Ebeam_Evap_O8E	2023-06-22 14:24:25	user	true	Tsai	Cheng-Chia	ct2443@columbia.edu
+Ebeam_Evap_O8E	2023-06-29 21:33:00	user	true	Aksit	Aykut	aykut@haystackmedical.com
+Ebeam_Evap_O8E	2023-07-03 11:26:21	user	true	Benseman	Timothy	timothy.benseman@qc.cuny.edu
+Ebeam_Evap_O8E	2023-07-03 13:23:04	user	true	Elghazoly	Sarah	selghazoly@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-07-03 16:44:34	user	true	Rashidi	Kamyar	krashidi@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-07-06 13:32:17	user	true	Wang	Wei	wwang3@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-07-07 16:22:23	user	true	Fang	Mengqi	mfang3@stevens.edu
+Ebeam_Evap_O8E	2023-07-26 15:02:52	user	true	Kumar	Raman	rkumar2@ccny.cuny.edu
+Ebeam_Evap_O8E	2023-08-01 13:59:43	user	true	Haridas Menon	Niranjan	nh333@njit.edu
+Ebeam_Evap_O8E	2023-08-11 15:25:31	user	true	Mohajerani	Seyed Sepehr	smohajer@stevens.edu
+Ebeam_Evap_O8E	2023-08-24 12:16:50	user	true	Tang	Yunong	ytang@quantumcomputinginc.com
+Ebeam_Evap_O8E	2023-08-30 13:21:30	user	true	Selvarathinam	Thambiraj	thambirajnano@hotmail.com
+Ebeam_Evap_O8E	2023-09-06 16:47:18	user	true	Inman	Michel	minman@stevens.edu
+Ebeam_Evap_O8E	2023-09-15 14:41:35	user	true	Singh	Charanjot	csingh@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-10-10 15:09:06	user	true	Zachariah	Serena	szachariah@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2023-10-16 14:14:43	user	true	Hayes	William	wph2109@columbia.edu
+Ebeam_Evap_O8E	2023-10-24 17:03:48	user	true	Han	Guanyu	guanyu.han22@gc.cuny.edu
+Ebeam_Evap_O8E	2023-11-02 13:23:11	user	true	Lakra	Ayesha	alakra@ccny.cuny.edu
+Ebeam_Evap_O8E	2023-11-10 16:56:50	user	true	Jing	Lin	lin.jing35@gc.cuny.edu
+Ebeam_Evap_O8E	2023-11-15 12:30:30	user	true	Stinson	William	wds2122@columbia.edu
+Ebeam_Evap_O8E	2024-01-09 15:40:02	user	true	Budarapu	Abhishek	abudarapu@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-01-17 15:40:38	user	true	Elizarraras	Carolina	cie221@nyu.edu
+Ebeam_Evap_O8E	2024-01-30 12:17:46	user	true	Valiyaparambil Dharmapalan	Agneya	adharmapalan@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-02-02 15:39:43	user	true	Wang	Yu	ywang10@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-03-04 16:10:17	user	true	Chung	Theodore	tc3163@columbia.edu
+Ebeam_Evap_O8E	2024-07-19 16:52:00	user	true	Mohammadi	Mohaddeseh	mm2959@njit.edu
+Ebeam_Evap_O8E	2024-07-24 16:54:00	user	true	Kurganov	Egor	ekurganov@ccny.cuny.edu
+Ebeam_Evap_O8E	2024-07-25 13:12:30	user	true	Han	Kwanghee	kwangheehan@khu.ac.kr
+Ebeam_Evap_O8E	2024-07-25 13:12:50	user	true	Czudak	Philip	philipczudak@gmail.com
+Ebeam_Evap_O8E	2024-08-09 12:05:15	user	true	Radhakrishnan	Padma	pr2545@nyu.edu
+Ebeam_Evap_O8E	2024-08-27 12:48:09	user	true	Paul	Suvodeep	suvodeeppaul100@gmail.com
+Ebeam_Evap_O8E	2024-09-03 17:16:40	user	true	Mikalsen	Melissa	mem9982@nyu.edu
+Ebeam_Evap_O8E	2024-09-18 12:17:52	user	true	Lai	Ya-An	yal245@nyu.edu
+Ebeam_Evap_O8E	2024-09-20 11:09:16	user	true	Shakya	Chandra	cshakya1@stevens.edu
+Ebeam_Evap_O8E	2024-10-04 11:34:03	user	true	Haizel	Emmanuel	ehaizel@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-10-04 15:29:10	user	true	Kafeeva	Daria	dkafeeva@ccny.cuny.edu
+Ebeam_Evap_O8E	2024-10-21 13:09:44	user	true	Baxter	Amanda	amanda@turnoverlabs.com
+Ebeam_Evap_O8E	2024-10-22 16:29:46	user	true	Erzoah Ndede	Kenneth	kerzoahndede@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-10-25 11:23:03	user	true	Zhu	Zezheng	zz2914@columbia.edu
+Ebeam_Evap_O8E	2024-10-29 15:42:58	user	true	Pandit	Abhipsha	apandit@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-10-30 12:19:11	user	true	Buzi	Entela	ebuzi@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-10-31 12:18:20	user	true	Rana	Prithivi	pr2507@nyu.edu
+Ebeam_Evap_O8E	2024-11-12 16:29:09	user	true	Goldgisser	Maya	mgoldgisser@wesleyan.edu
+Ebeam_Evap_O8E	2024-11-14 16:54:19	user	true	Trivizas	George	geotrivizas@gmail.com
+Ebeam_Evap_O8E	2024-11-25 12:39:54	user	true	Bhuiyan	Reaz Uddin	rbhuiyan@ccny.cuny.edu
+Ebeam_Evap_O8E	2024-11-25 17:28:29	user	true	Deng	Wenjun	wdeng1@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2024-12-17 17:31:02	user	true	Dangi	Nirmal	ndangi1@stevens.edu
+Ebeam_Evap_O8E	2024-12-20 14:24:15	user	true	Gao	Yajun	yajun.gao95@gc.cuny.edu
+Ebeam_Evap_O8E	2025-02-11 12:17:42	user	true	Feng	Ziyao	fengzy869@link.cuhk.edu.hk
+Ebeam_Evap_O8E	2025-02-24 12:00:59	user	true	Deng	Nanzhong	nd2410@nyu.edu
+Ebeam_Evap_O8E	2025-02-24 16:39:10	user	true	Issokson	Jacob	jbi2009@nyu.edu
+Ebeam_Evap_O8E	2025-03-03 12:11:00	user	true	Aykin	Ahmet Koral	aka8044@nyu.edu
+Ebeam_Evap_O8E	2025-03-04 13:00:24	user	true	Li	Zhan	zli@quantumcomputinginc.com
+Ebeam_Evap_O8E	2025-03-27 16:49:21	user	true	Pallithodi Chinnappa	Mohammed Dasthaheer	mpallithodichinnappa@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2025-03-31 16:10:23	user	true	Rutckaia	Viktoriia	vrutckaia@gc.cuny.edu
+Ebeam_Evap_O8E	2025-04-01 14:20:59	user	true	Cruz	Andy	acruz20@citymail.cuny.edu
+Ebeam_Evap_O8E	2025-04-16 12:27:32	user	true	Bershadsky	Lev	lb3953@nyu.edu
+Ebeam_Evap_O8E	2025-04-28 16:57:27	user	true	Liu	Ethan Yi-Chen	yl5188@columbia.edu
+Ebeam_Evap_O8E	2025-05-05 13:10:31	user	true	Ighile	Abdulsalam	abdulsalam.ighile72@qmail.cuny.edu
+Ebeam_Evap_O8E	2025-05-07 17:53:29	user	true	Adhikari	Ashok	aadhikari@gradcenter.cuny.edu
+Ebeam_Evap_O8E	2025-05-20 11:20:06	user	true	Barzegar	Maryam	mb9909@nyu.edu
+Ebeam_Evap_O8E	2025-05-20 17:29:35	user	true	Rezene	Aron	aron.rezene20@qmail.cuny.edu
+Ebeam_Evap_O8E	2025-06-02 13:55:17	user	true	Rutckaia	Viktoriia	viktoriia.rutckaia47@gc.cuny.edu
