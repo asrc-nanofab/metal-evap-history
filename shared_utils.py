@@ -3,6 +3,17 @@ import pandas as pd
 import streamlit as st
 from datetime import date, datetime
 
+MATERIAL_DICT = {
+    "Silver": "Ag",
+    "Gold": "Au",
+    "Chromium": "Cr",
+    "Silicon Dioxide": "SiO2",
+    "Titanium": "Ti",
+    "Platinum": "Pt",
+    "Germanium": "Ge",  # Note: I assume "Geranium" in your list is a typo
+    "Aluminum Oxide": "Al2O3",
+}
+
 
 def load_clean_data():
     df = pd.read_csv("data/Ebeam_Deposition_Powers_CLEAN.csv")
@@ -21,13 +32,25 @@ def load_clean_data():
 
 def append_row_to_csv(row_dict):
     df = pd.read_csv("data/Ebeam_Deposition_Powers_CLEAN.csv")
-    columns = df.columns.tolist()
+
     # Format date as MM/DD/YYYY
     if isinstance(row_dict["Date"], (pd.Timestamp, date, datetime)):
         row_dict["Date"] = pd.to_datetime(row_dict["Date"]).strftime("%m/%d/%Y")
     else:
         row_dict["Date"] = str(row_dict["Date"])
-    new_row = {col: row_dict.get(col, "") for col in columns}
+
+    # Add any new columns to the existing dataframe if they don't exist
+    existing_columns = df.columns.tolist()
+    new_columns = [col for col in row_dict.keys() if col not in existing_columns]
+
+    if new_columns:
+        st.info(f"Adding new columns: {', '.join(new_columns)}")
+        for col in new_columns:
+            df[col] = ""  # Fill existing rows with empty strings for new columns
+
+    # Combine all columns (existing + new)
+    all_columns = existing_columns + new_columns
+    new_row = {col: row_dict.get(col, "") for col in all_columns}
     new_row_df = pd.DataFrame([new_row])
     df = pd.concat([df, new_row_df], ignore_index=True)
     df.to_csv("data/Ebeam_Deposition_Powers_CLEAN.csv", index=False)

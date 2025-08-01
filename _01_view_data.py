@@ -2,14 +2,14 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from shared_utils import load_clean_data
+from shared_utils import load_clean_data, MATERIAL_DICT
 
 
 def view_data_page():
     df = load_clean_data()
 
     # Sidebar: material selector (only valid, normalized names)
-    materials = sorted(df["Material"].unique())
+    materials = sorted(MATERIAL_DICT.keys())
     material = st.sidebar.selectbox("Select material", materials)
 
     # Filter data using normalized material

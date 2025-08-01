@@ -3,16 +3,84 @@ import base64
 import os
 import glob
 import time
+import pandas as pd
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
+
+def get_unique_user_names(file_path="data/Ebeam_evap_recent_users.txt"):
+    """
+    Read the users file and return a unique list of 'first name last name' combinations.
+
+    Args:
+        file_path (str): Path to the tab-delimited users file
+
+    Returns:
+        list: Unique list of user names in 'first name last name' format
+    """
+    try:
+        # Read the tab-delimited file
+        df = pd.read_csv(file_path, delimiter="\t")
+
+        # Extract first name and last name columns (assuming columns 5 and 4 based on file structure)
+        # Columns: equipment, date, role, active, last name, first name, member
+        first_names = df["first name"].astype(str)
+        last_names = df["last name"].astype(str)
+
+        # Combine first and last names
+        full_names = first_names + " " + last_names
+
+        # Remove duplicates and sort
+        unique_names = sorted(list(set(full_names)))
+
+        # Remove any empty or invalid entries
+        unique_names = [
+            name for name in unique_names if name.strip() and name != "nan nan"
+        ]
+
+        print(f"✓ Loaded {len(unique_names)} unique user names from {file_path}")
+        return unique_names
+
+    except Exception as e:
+        print(f"✗ Error reading user names file: {str(e)}")
+        print("Continuing without user name validation...")
+        return []
+
+
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Your extraction prompt
-EXTRACTION_PROMPT = """Please extract all data from this handwritten spreadsheet image and convert it to CSV format. The spreadsheet contains the following columns in order:
+
+def create_extraction_prompt(user_names_list):
+    """Create the extraction prompt with the list of valid user names."""
+
+    # Format the user names list for the prompt
+    if user_names_list:
+        names_text = "\n".join([f"- {name}" for name in user_names_list])
+        user_validation_text = f"""
+VALID USER NAMES:
+The following is a complete list of valid user names. When extracting the User Name from the handwritten spreadsheet, match the handwritten name as closely as possible to one of these names:
+
+{names_text}
+
+USER NAME MATCHING RULES:
+- Match handwritten user names to the closest name from the valid list above
+- Account for handwriting variations, abbreviations, or partial names
+- If you find a close match, use the exact name from the valid list
+- If no reasonable match can be found, use "UNKNOWN_USER" instead of guessing
+- Common variations to consider: initials, nicknames, last name only, first name only
+"""
+    else:
+        user_validation_text = """
+USER NAME EXTRACTION:
+- Extract user names exactly as written in the handwritten spreadsheet
+- Account for handwriting variations, abbreviations, or partial names
+- If any user name is unclear or illegible, use "UNCLEAR" as the value
+"""
+
+    prompt = f"""Please extract all data from this handwritten spreadsheet image and convert it to CSV format. The spreadsheet contains the following columns in order:
 
 1. Date
 2. User name  
@@ -22,29 +90,45 @@ EXTRACTION_PROMPT = """Please extract all data from this handwritten spreadsheet
 6. Rate (percent)
 7. Thickness (percent)
 8. Crystal monitor (percent)
-
+{user_validation_text}
 Please follow these extraction and validation rules:
 - Extract each row of data carefully
 - Maintain the exact column order listed above
-- Use standard date formats (MM/DD/YYYY or similar)
 - Include a header row with column names
 - If any cell is unclear or illegible, use "UNCLEAR" as the value
 - Blank cells should be left empty (just use commas with no value between them)
 
+DATE FORMATTING RULES:
+- Always return dates in MM/DD/YYYY format (month/day/4-digit-year)
+- If the handwritten date includes a 4-digit year, use it as written
+- If the handwritten date only shows month/day (like "3/15" or "03/15"), extrapolate the year:
+  * Look at other dates in the same spreadsheet for context
+  * All entries in a single spreadsheet typically occur within the same week/year
+  * Use the most logical year based on the context of other complete dates in the sheet
+  * If no other dates have years visible, use reasonable assumptions based on the data context
+- Examples: "3/15" might become "03/15/2024" if other dates suggest 2024
+- If date format is unclear, use "UNCLEAR" for that entry
+
 IMPORTANT FORMATTING RULES:
 - For Thickness column: Extract only the numeric value, remove "nm" or any other units
+- For Rate column: Extract only the numeric value, remove any units
+  * If rate includes "A/S" or "Å/S" (angstroms per second), extract only the number
 - For percentage columns (Threshold Power, Power Deposition, Rate, Crystal Monitor): 
   * Extract only the numeric value, remove "%" symbols
   * Valid values must be between 0 and 100
   * If a percentage value is outside 0-100 range, use "INVALID_RANGE" instead
-- Remove all unit symbols (%, nm, etc.) from the final output
+- Remove all unit symbols (%, nm, A/S, Å/S, etc.) from the final output
 
 Quality control:
 - Double-check that percentage values are reasonable (0-100)
+- Double-check that the Threshold Power value is less than the Power Deposition value for each row
+- Ensure all dates follow MM/DD/YYYY format with consistent year extrapolation
 - Flag any suspicious or out-of-range values
 - Output only the CSV data, no additional text
 
 CSV Header: Date,User Name,Materials,Threshold Power,Power Deposition,Rate,Thickness,Crystal Monitor"""
+
+    return prompt
 
 
 def encode_image(image_path):
@@ -53,7 +137,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
-def process_image_to_csv(image_path, page_number, output_dir):
+def process_image_to_csv(image_path, page_number, output_dir, extraction_prompt):
     """Process a single image and return CSV data"""
     print(f"Processing page {page_number}: {os.path.basename(image_path)}...")
 
@@ -68,7 +152,7 @@ def process_image_to_csv(image_path, page_number, output_dir):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": EXTRACTION_PROMPT},
+                        {"type": "text", "text": extraction_prompt},
                         {
                             "type": "image_url",
                             "image_url": {
@@ -99,6 +183,13 @@ def process_image_to_csv(image_path, page_number, output_dir):
 
 
 def main():
+    # Load user names first
+    print("Loading user names for validation...")
+    user_names = get_unique_user_names()
+
+    # Create extraction prompt with user names
+    extraction_prompt = create_extraction_prompt(user_names)
+
     # Configure your paths here
     image_folder = "data/images"  # Change this to your actual folder path
     output_dir = "data/output_csvs"  # Output directory for all CSV files
@@ -135,7 +226,9 @@ def main():
     successful_pages = []
 
     for i, image_path in enumerate(image_files, 1):
-        csv_data, success = process_image_to_csv(image_path, i, output_dir)
+        csv_data, success = process_image_to_csv(
+            image_path, i, output_dir, extraction_prompt
+        )
 
         if success and csv_data:
             all_csv_data.append(csv_data)

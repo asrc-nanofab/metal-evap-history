@@ -1,10 +1,9 @@
 # app.py
 import streamlit as st
 
-
-from view_data import view_data_page
-from add_entry import add_entry_page
-from edit_data import edit_data_page
+from _01_view_data import view_data_page
+from _02_add_entry import add_entry_page
+from _03_user_data import user_data_page
 
 # Page configuration
 st.set_page_config(page_title="Metal Evaporation History")  # , layout="wide")
@@ -19,7 +18,7 @@ if page == "View Data":
 elif page == "Add Entry":
     add_entry_page()
 elif page == "Edit Data":
-    edit_data_page()
+    user_data_page()
 
 # ------------------------------------------------------------------------------------------------
 

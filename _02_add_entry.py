@@ -1,15 +1,13 @@
 # add_entry.py
 import streamlit as st
 from datetime import date
-from shared_utils import load_clean_data, append_row_to_csv
+from shared_utils import append_row_to_csv, MATERIAL_DICT
 
 
 def add_entry_page():
     # Hide the "press enter to submit" tooltip
 
     st.title("Add New Deposition Entry")
-
-    df = load_clean_data()
 
     # Initialize session state
     if "form_submitted" not in st.session_state:
@@ -22,7 +20,7 @@ def add_entry_page():
         entry_date = today.strftime("%m/%d/%Y")
         st.write(f"Date: {entry_date}")
         # Use normalized material names for dropdown
-        materials = sorted(df["Material"].unique())
+        materials = sorted(MATERIAL_DICT.keys())
         material = st.selectbox("Material*", materials)
         threshold_power = st.number_input(
             "Threshold Power (%)*",

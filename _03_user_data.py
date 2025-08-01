@@ -6,7 +6,7 @@ import time
 from shared_utils import load_clean_data, save_edited_data_to_csv
 
 
-def edit_data_page():
+def user_data_page():
     st.title("Edit Deposition Data")
     st.info(
         "💡 **Instructions**: View all data below, then select a specific row to edit."
