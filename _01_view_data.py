@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from shared_utils import load_clean_data, MATERIAL_DICT
+from utils.app_utils import load_clean_data, MATERIAL_DICT
 
 
 def view_data_page():

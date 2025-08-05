@@ -1,7 +1,7 @@
 # add_entry.py
 import streamlit as st
 from datetime import date
-from shared_utils import append_row_to_csv, MATERIAL_DICT
+from utils.app_utils import append_row_to_csv, MATERIAL_DICT
 
 
 def add_entry_page():

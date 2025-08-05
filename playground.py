@@ -1,9 +1,11 @@
-from shared_utils import load_clean_data
+from utils.app_utils import load_clean_data
 
 df = load_clean_data()
 
 print(df.head())
 
-df.Material.unique().tolist()
+df.Materials.unique().tolist()
 
 len(df)
+
+df
