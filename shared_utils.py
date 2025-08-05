@@ -3,6 +3,9 @@ import pandas as pd
 import streamlit as st
 from datetime import date, datetime
 
+# Global constants
+DATA_FILE_PATH = "data/Ebeam_Deposition_Powers_CLEAN.csv"
+
 MATERIAL_DICT = {
     "Silver": "Ag",
     "Gold": "Au",
@@ -16,7 +19,7 @@ MATERIAL_DICT = {
 
 
 def load_clean_data():
-    df = pd.read_csv("data/Ebeam_Deposition_Powers_CLEAN.csv")
+    df = pd.read_csv(DATA_FILE_PATH)
     # Ensure Date is datetime
     df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
     # Convert back to MM/DD/YYYY string format for display
@@ -31,7 +34,7 @@ def load_clean_data():
 
 
 def append_row_to_csv(row_dict):
-    df = pd.read_csv("data/Ebeam_Deposition_Powers_CLEAN.csv")
+    df = pd.read_csv(DATA_FILE_PATH)
 
     # Format date as MM/DD/YYYY
     if isinstance(row_dict["Date"], (pd.Timestamp, date, datetime)):
@@ -53,7 +56,7 @@ def append_row_to_csv(row_dict):
     new_row = {col: row_dict.get(col, "") for col in all_columns}
     new_row_df = pd.DataFrame([new_row])
     df = pd.concat([df, new_row_df], ignore_index=True)
-    df.to_csv("data/Ebeam_Deposition_Powers_CLEAN.csv", index=False)
+    df.to_csv(DATA_FILE_PATH, index=False)
     st.success("Entry added! Reload the View Data page to see the update.")
 
 
@@ -67,7 +70,7 @@ def save_edited_data_to_csv(edited_df):
             ).dt.strftime("%m/%d/%Y")
 
         # Save to CSV
-        edited_df.to_csv("data/Ebeam_Deposition_Powers_CLEAN.csv", index=False)
+        edited_df.to_csv(DATA_FILE_PATH, index=False)
         return True
     except Exception as e:
         st.error(f"Error saving data: {e}")
