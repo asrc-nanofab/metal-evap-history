@@ -1,7 +1,7 @@
 # view_data.py
 import streamlit as st
 import pandas as pd
-from src.data_service import get_view_data
+from src.data_service import get_and_format_tool_data
 from src.graphing import display_chart, CHART_TYPES
 import logging
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def view_data_page():
     # Get data from database using separated service
-    df = get_view_data()
+    df = get_and_format_tool_data()
 
     # Get unique materials from the DataFrame (only materials with data)
     if not df.empty:
@@ -81,14 +81,21 @@ def view_data_page():
         st.subheader(f"Raw Data for {material}")
         table_df = filtered.reset_index(drop=True).copy()
 
-        # Remove material column since it's redundant (already filtered by material)
-        if "Material" in table_df.columns:
-            table_df = table_df.drop("Material", axis=1)
+        # Select only the columns we want to display
+        display_columns = [
+            "Date",
+            "Threshold_Power",
+            "Power_Deposition",
+            "Rate",
+            "Thickness",
+            "Crystal_Monitor",
+        ]
+        table_df = table_df[display_columns]
 
         if "Date" in table_df.columns and not table_df.empty:
-            # Ensure Date column is datetime before formatting
-            if not pd.api.types.is_datetime64_any_dtype(table_df["Date"]):
-                table_df["Date"] = pd.to_datetime(table_df["Date"], errors="coerce")
+            # Sort by date in descending order (most recent first)
+            table_df = table_df.sort_values("Date", ascending=False)
+            # Format Date column for display (already datetime from data service)
             table_df["Date"] = table_df["Date"].dt.strftime("%m/%d/%Y")
         st.dataframe(table_df, use_container_width=True, hide_index=True)
     else:

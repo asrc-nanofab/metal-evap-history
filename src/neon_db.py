@@ -293,6 +293,9 @@ class MetalEvapDB:
         """
         query = """
         SELECT 
+            td.id as tool_data_id,
+            td.user_id,
+            td.material_id,
             td.date_recorded,
             CONCAT(u.first_name, ' ', u.last_name) as user_name,
             m.material_name,
@@ -342,6 +345,85 @@ class MetalEvapDB:
 
         except Exception as e:
             logger.error(f"Error dropping tables: {e}")
+            raise
+
+    def add_entry_from_widgets(
+        self,
+        user_name: str,  # Full name from dropdown
+        material_name: str,  # Material name from dropdown
+        thickness: float,
+        threshold_pct: float,
+        deposition_pct: float,
+        dep_rate: float,
+        crystal_pct: float,
+        measured_thickness: Optional[float] = None,
+        notes: Optional[str] = None,
+        date_recorded: Optional[str] = None,  # Auto-assign if None
+    ) -> int:
+        """
+        Add metal evaporation data entry from widget inputs
+        Returns the ID of the created entry
+        """
+        from datetime import date
+
+        # Auto-assign current date if not provided
+        if date_recorded is None:
+            date_recorded = date.today().strftime("%Y-%m-%d")
+
+        # Get user_id from user name
+        user_id = self._get_user_id_by_name(user_name)
+        if user_id is None:
+            raise ValueError(f"User '{user_name}' not found in database")
+
+        # Get material_id from material name
+        material_id = self.get_material_id(material_name)
+        if material_id is None:
+            raise ValueError(f"Material '{material_name}' not found in database")
+
+        # Create MetalEvapData object
+        evap_data = MetalEvapData(
+            user_id=user_id,
+            material_id=material_id,
+            date_recorded=date_recorded,
+            thickness=thickness,
+            threshold_pct=threshold_pct,
+            deposition_pct=deposition_pct,
+            dep_rate=dep_rate,
+            crystal_pct=crystal_pct,
+            measured_thickness=measured_thickness,
+            notes=notes,
+        )
+
+        # Add to database using existing method
+        return self.add_evap_data(evap_data)
+
+    def _get_user_id_by_name(self, user_name: str) -> Optional[int]:
+        """Get user ID by full name (first_name + ' ' + last_name)"""
+        query = """
+        SELECT id FROM users 
+        WHERE CONCAT(first_name, ' ', last_name) = %s;
+        """
+
+        try:
+            result = self.execute_query(query, (user_name,), fetch=True)
+            return result[0]["id"] if result else None
+        except Exception as e:
+            logger.error(f"Error getting user ID by name: {e}")
+            raise
+
+    def get_user_names_for_dropdown(self) -> List[str]:
+        """Get list of user names formatted for dropdown (first_name + ' ' + last_name)"""
+        query = """
+        SELECT CONCAT(first_name, ' ', last_name) as full_name
+        FROM users 
+        ORDER BY last_name, first_name;
+        """
+
+        try:
+            result = self.execute_query(query, fetch=True)
+            return [row["full_name"] for row in result] if result else []
+        except Exception as e:
+            logger.error(f"Error getting user names: {e}")
             raise
 
 

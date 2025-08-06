@@ -1,251 +1,264 @@
-# edit_data.py
+# user_data.py
 import streamlit as st
-import pandas as pd
-from datetime import date, datetime
-import time
-from utils.csv_utils import load_clean_data, save_edited_data_to_csv
+from src.data_service import get_and_format_tool_data
+import logging
+
+# Set up logging (only for errors)
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 def user_data_page():
-    st.title("Edit Deposition Data")
+    st.title("📊 User Data")
+    # below the title, add a horizontal line
     st.info(
-        "💡 **Instructions**: View all data below, then select a specific row to edit."
+        "This page allows you to view and edit deposition data for a specific user."
     )
 
-    df = load_clean_data()
+    # Get data from database using separated service
+    df = get_and_format_tool_data()
 
-    # Backup section
-    st.subheader("📥 Backup Data")
-    csv_backup = df.to_csv(index=False)
-    st.download_button(
-        "📄 Download Current Data as Backup",
-        data=csv_backup,
-        file_name=f"deposition_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-        mime="text/csv",
-        help="Download your data before making any edits",
-    )
+    # Get unique users from the DataFrame (only users with data)
+    if not df.empty:
+        # Extract unique users from the data
+        unique_users = sorted(df["User"].unique().tolist())
+        user_options = ["All Users"] + unique_users
+    else:
+        unique_users = []
+        user_options = ["All Users"]
 
-    st.markdown("---")
+    # User selection in sidebar
+    st.sidebar.subheader("👤 Select User")
 
-    # Display data
-    st.subheader("📊 All Deposition Data")
-    st.info("This table is read-only. Select a row below to edit it.")
-    df_display = df.copy()
-    df_display.index = df_display.index + 1
-    st.dataframe(df_display, use_container_width=True, height=400)
-
-    st.markdown("---")
-
-    # Row selection
-    st.subheader("✏️ Select Row to Edit")
-
-    if len(df) == 0:
-        st.warning("No data available to edit.")
+    if not unique_users:
+        st.sidebar.warning("No users with data found.")
         return
 
-    selected_row_num = st.number_input(
-        "Enter row number to edit:",
-        min_value=1,
-        max_value=len(df),
-        value=1,
-        step=1,
-        help=f"Choose a row number between 1 and {len(df)}",
+    selected_user_name = st.sidebar.selectbox(
+        "Choose a user:", options=user_options, index=0
     )
 
-    selected_row_idx = selected_row_num - 1
-    selected_row = df.iloc[selected_row_idx].copy()
+    # Filter data based on selected user
+    if selected_user_name == "All Users":
+        filtered_df = df
+        st.sidebar.info("Showing data for all users")
+    else:
+        # Filter DataFrame by selected user name
+        filtered_df = df[df["User"] == selected_user_name]
+        st.sidebar.info(f"Showing data for {selected_user_name}")
 
-    # Show selection
-    date_str = (
-        pd.to_datetime(selected_row["Date"]).strftime("%m/%d/%Y")
-        if pd.notna(selected_row["Date"])
-        else "No Date"
-    )
-    material = (
-        selected_row["Material"]
-        if pd.notna(selected_row["Material"])
-        else "No Material"
-    )
-    st.info(f"📍 **Selected**: Row {selected_row_num} - {date_str} - {material}")
+    # Show basic info in sidebar
+    st.sidebar.write(f"Total records: {len(filtered_df)}")
 
-    st.markdown("---")
-    st.subheader(f"🔧 Editing Row {selected_row_num}")
+    if not filtered_df.empty:
+        st.sidebar.write(
+            f"Date range: {filtered_df['Date'].min().strftime('%m/%d/%Y')} to {filtered_df['Date'].max().strftime('%m/%d/%Y')}"
+        )
+        st.sidebar.write(
+            f"Materials: {', '.join(sorted(filtered_df['Material'].unique()))}"
+        )
 
-    # Field configurations
-    field_configs = {
-        "Date": {"type": "date", "icon": "📅"},
-        "Material": {"type": "selectbox", "icon": "🧪"},
-        "Threshold_Power": {
-            "type": "number",
-            "label": "Threshold Power (%)",
-            "min": 0.0,
-            "max": 100.0,
-            "icon": "⚡",
-        },
-        "Power_Deposition": {
-            "type": "number",
-            "label": "Deposition Power (%)",
-            "min": 0.0,
-            "max": 100.0,
-            "icon": "⚡",
-        },
-        "Rate": {
-            "type": "number",
-            "label": "Rate (A/s)",
-            "min": 0.0,
-            "max": 100.0,
-            "icon": "📈",
-        },
-        "Thickness_nm": {
-            "type": "number",
-            "label": "Thickness (per xTal Monitor)",
-            "min": 0.0,
-            "max": 10000.0,
-            "icon": "📏",
-        },
-        # "Measured": {
-        #     "type": "number",
-        #     "label": "Measured",
-        #     "min": 0.0,
-        #     "max": 10000.0,
-        #     "icon": "📐",
-        # },
-        # "Crystal_Monitor": {
-        #     "type": "number",
-        #     "label": "Crystal Monitor",
-        #     "min": 0.0,
-        #     "max": 100.0,
-        #     "icon": "💎",
-        # },
-    }
+    if filtered_df.empty:
+        st.error("No data found for the selected user.")
+        return
 
+    # Display filtered data
+    if selected_user_name == "All Users":
+        st.subheader("📊 All Deposition Data")
+    else:
+        st.subheader(f"📊 Data for {selected_user_name}")
+
+    # Summary statistics
     col1, col2 = st.columns(2)
-
     with col1:
-        st.markdown("**📋 Original Values**")
-        # Show original values (read-only)
-        orig_date = (
-            pd.to_datetime(selected_row["Date"]).strftime("%m/%d/%Y")
-            if pd.notna(selected_row["Date"])
-            else ""
-        )
-        st.text_input("Date", value=orig_date, disabled=True)
-        st.text_input("Material", value=selected_row["Material"], disabled=True)
-
-        for field, config in field_configs.items():
-            if config["type"] == "number":
-                st.number_input(
-                    config["label"], value=float(selected_row[field]), disabled=True
-                )
-
-    # Get new values
-    new_values = {}
+        st.metric("Total Records", len(filtered_df))
     with col2:
-        st.markdown("**✏️ New Values**")
+        st.metric("Unique Materials", len(filtered_df["Material"].unique()))
 
-        # Date field
-        try:
-            orig_date_obj = pd.to_datetime(selected_row["Date"]).date()
-        except:  # noqa: E722
-            orig_date_obj = date.today()
-        new_values["Date"] = st.date_input("Date", value=orig_date_obj, key="new_date")
+    # Sort by date in descending order (most recent first)
+    df_display = filtered_df.sort_values("Date", ascending=False).copy()
 
-        # Material field
-        current_materials = sorted(df["Material"].unique().tolist())
-        current_material_idx = (
-            current_materials.index(selected_row["Material"])
-            if selected_row["Material"] in current_materials
-            else 0
-        )
-        new_values["Material"] = st.selectbox(
-            "Material",
-            options=current_materials,
-            index=current_material_idx,
-            key="new_material",
-        )
+    # Select only the columns we want to display
+    display_columns = [
+        "Date",
+        "Material",
+        "Threshold_Power",
+        "Power_Deposition",
+        "Rate",
+        "Thickness",
+        "Crystal_Monitor",
+    ]
+    df_display = df_display[display_columns]
 
-        # Number fields
-        for field, config in field_configs.items():
-            if config["type"] == "number":
-                new_values[field] = st.number_input(
-                    config["label"],
-                    min_value=config["min"],
-                    max_value=config["max"],
-                    value=float(selected_row[field]),
-                    step=0.01,
-                    key=f"new_{field.lower()}",
-                )
+    # Format date for display
+    if "Date" in df_display.columns and not df_display.empty:
+        df_display["Date"] = df_display["Date"].dt.strftime("%m/%d/%Y")
 
-    # Detect changes
-    changes = {}
-    changes["Date"] = new_values["Date"] != orig_date_obj
-    changes["Material"] = new_values["Material"] != selected_row["Material"]
-    for field in field_configs:
-        if field_configs[field]["type"] == "number":
-            changes[field] = new_values[field] != float(selected_row[field])
+    # Add row numbers for easier reference
+    df_display.index = range(1, len(df_display) + 1)
 
-    changes_detected = any(changes.values())
+    # Display the table with row selection
+    st.dataframe(df_display, use_container_width=True)
 
-    # Show changes
-    if changes_detected:
-        st.markdown("---")
-        st.warning("🔄 **Changes Detected:**")
-
-        with st.expander("View Specific Changes", expanded=True):
-            if changes["Date"]:
-                st.write(
-                    f"📅 Date: {orig_date} → {new_values['Date'].strftime('%m/%d/%Y')}"
-                )
-            if changes["Material"]:
-                st.write(
-                    f"🧪 Material: {selected_row['Material']} → {new_values['Material']}"
-                )
-
-            for field, config in field_configs.items():
-                if config["type"] == "number" and changes[field]:
-                    old_val = selected_row[field]
-                    new_val = new_values[field]
-                    unit = (
-                        "%"
-                        if "Power" in config["label"]
-                        else ("A/s" if "Rate" in config["label"] else "")
-                    )
-                    st.write(
-                        f"{config['icon']} {config['label']}: {old_val}{unit} → {new_val}{unit}"
-                    )
-
-    # Action buttons
+    # Edit button to show/hide edit section
     st.markdown("---")
-    col1, col2, col3 = st.columns(3)
 
-    with col1:
-        if st.button("💾 Save Changes", type="primary", disabled=not changes_detected):
-            # Prepare row data
-            new_row_data = {
-                "Date": new_values["Date"].strftime("%m/%d/%Y"),
-                "Material": new_values["Material"],
-                **{
-                    field: new_values[field]
-                    for field in field_configs
-                    if field_configs[field]["type"] == "number"
-                },
-            }
+    # Initialize session state for edit mode
+    if "edit_mode" not in st.session_state:
+        st.session_state.edit_mode = False
 
-            # Update and save
-            df_updated = df.copy()
-            for col, value in new_row_data.items():
-                df_updated.at[selected_row_idx, col] = value
+    # Toggle edit mode with button
+    if st.button("✏️ Edit Row", type="primary"):
+        st.session_state.edit_mode = not st.session_state.edit_mode
 
-            if save_edited_data_to_csv(df_updated):
-                st.success(f"✅ Row {selected_row_idx + 1} updated successfully!")
-                st.info("🔄 Refresh the page to see all updates.")
-                time.sleep(1)
-                st.rerun()
-            else:
-                st.error("❌ Failed to save changes!")
+    if st.session_state.edit_mode and len(df_display) > 0:
+        st.subheader("✏️ Edit Row")
+        st.info("Select a row number to view and edit its data.")
 
-    with col2:
-        st.info("💡 **To discard changes:** Navigate away or select a different row")
+        # Row selector
+        selected_row = st.selectbox(
+            "Choose a row to edit:",
+            options=df_display.index.tolist(),
+            format_func=lambda x: f"Row {x}",
+        )
 
-    with col3:
-        st.metric("Editing Row", f"{selected_row_num} of {len(df)}")
+        if selected_row:
+            # Get the original data (before display formatting)
+            # We need to use the same DataFrame that was used to create df_display
+            # df_display was created from filtered_df with sorting and column selection
+            sorted_filtered_df = filtered_df.sort_values("Date", ascending=False)
+            original_row = sorted_filtered_df.iloc[selected_row - 1]
+
+            # Display selected row data
+            st.subheader(f"📋 Row {selected_row} Data")
+
+            col1, col2 = st.columns(2)
+
+            # Show Tool Data ID separately
+            st.write(f"**Tool Data ID:** {original_row['Tool_Data_ID']}")
+            st.markdown("---")
+
+            with col1:
+                st.write("**Current Values:**")
+
+                # Display widgets that line up with input widgets
+                st.text_input(
+                    "Date:",
+                    value=original_row["Date"].strftime("%m/%d/%Y"),
+                    disabled=True,
+                    key=f"current_date_{selected_row}",
+                )
+                st.text_input(
+                    "User:",
+                    value=original_row["User"],
+                    disabled=True,
+                    key=f"current_user_{selected_row}",
+                )
+                st.text_input(
+                    "Material:",
+                    value=original_row["Material"],
+                    disabled=True,
+                    key=f"current_material_{selected_row}",
+                )
+                st.text_input(
+                    "Threshold Power:",
+                    value=str(original_row["Threshold_Power"]),
+                    disabled=True,
+                    key=f"current_threshold_{selected_row}",
+                )
+                st.text_input(
+                    "Power Deposition:",
+                    value=str(original_row["Power_Deposition"]),
+                    disabled=True,
+                    key=f"current_power_{selected_row}",
+                )
+                st.text_input(
+                    "Rate:",
+                    value=str(original_row["Rate"]),
+                    disabled=True,
+                    key=f"current_rate_{selected_row}",
+                )
+                st.text_input(
+                    "Thickness:",
+                    value=str(original_row["Thickness"]),
+                    disabled=True,
+                    key=f"current_thickness_{selected_row}",
+                )
+                st.text_input(
+                    "Crystal Monitor:",
+                    value=str(original_row["Crystal_Monitor"]),
+                    disabled=True,
+                    key=f"current_crystal_{selected_row}",
+                )
+
+            with col2:
+                st.write("**New Values:**")
+
+                # Input widgets for editing
+                new_date = st.date_input(
+                    "Date:",
+                    value=original_row["Date"].date(),
+                    key=f"date_{selected_row}",
+                )
+
+                new_user = st.text_input(
+                    "User:", value=original_row["User"], key=f"user_{selected_row}"
+                )
+
+                new_material = st.text_input(
+                    "Material:",
+                    value=original_row["Material"],
+                    key=f"material_{selected_row}",
+                )
+
+                new_threshold_power = st.number_input(
+                    "Threshold Power:",
+                    value=float(original_row["Threshold_Power"]),
+                    step=0.1,
+                    key=f"threshold_{selected_row}",
+                )
+
+                new_power_deposition = st.number_input(
+                    "Power Deposition:",
+                    value=float(original_row["Power_Deposition"]),
+                    step=0.1,
+                    key=f"power_{selected_row}",
+                )
+
+                new_rate = st.number_input(
+                    "Rate:",
+                    value=float(original_row["Rate"]),
+                    step=0.1,
+                    key=f"rate_{selected_row}",
+                )
+
+                new_thickness = st.number_input(
+                    "Thickness:",
+                    value=float(original_row["Thickness"]),
+                    step=0.1,
+                    key=f"thickness_{selected_row}",
+                )
+
+                new_crystal_monitor = st.number_input(
+                    "Crystal Monitor:",
+                    value=float(original_row["Crystal_Monitor"]),
+                    step=0.1,
+                    key=f"crystal_{selected_row}",
+                )
+
+                # Save/Cancel buttons
+                st.markdown("---")
+                col_save, col_cancel = st.columns(2)
+
+                with col_save:
+                    if st.button("💾 Save Changes", key=f"save_{selected_row}"):
+                        st.success(
+                            "Save functionality will be implemented in the next step!"
+                        )
+
+                with col_cancel:
+                    if st.button("❌ Cancel", key=f"cancel_{selected_row}"):
+                        st.info("Edit cancelled. No changes were made.")
+                        st.rerun()  # Refresh the page to hide edit section
+    elif st.session_state.edit_mode and len(df_display) == 0:
+        st.warning("No data available to edit.")
