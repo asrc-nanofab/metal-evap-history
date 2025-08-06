@@ -58,7 +58,7 @@ def test_new_db_functions():
             latest_entry = all_data[0] if all_data else None
 
             if latest_entry:
-                print(f"Latest entry details:")
+                print("Latest entry details:")
                 print(f"  - User: {latest_entry['user_name']}")
                 print(f"  - Material: {latest_entry['material_name']}")
                 print(f"  - Date: {latest_entry['date_recorded']}")
