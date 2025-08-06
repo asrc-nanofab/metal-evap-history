@@ -266,6 +266,27 @@ class MetalEvapDB:
             logger.error(f"Error getting evap data: {e}")
             raise
 
+    def add_material(self, material_name: str, abbreviation: str) -> int:
+        """Add a new material and return the material ID"""
+        query = """
+        INSERT INTO materials (material_name, abbreviation)
+        VALUES (%s, %s)
+        RETURNING id;
+        """
+
+        try:
+            result = self.execute_query(
+                query, (material_name, abbreviation), fetch=True
+            )
+            material_id = result[0]["id"]
+            logger.info(
+                f"Added material: {material_name} ({abbreviation}) (ID: {material_id})"
+            )
+            return material_id
+        except Exception as e:
+            logger.error(f"Error adding material: {e}")
+            raise
+
     def get_all_materials(self) -> List[Dict[Any, Any]]:
         """Get all available materials"""
         query = "SELECT * FROM materials ORDER BY material_name;"
