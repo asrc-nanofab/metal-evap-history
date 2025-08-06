@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from datetime import date, datetime
 import time
-from utils.app_utils import load_clean_data, save_edited_data_to_csv
+from utils.csv_utils import load_clean_data, save_edited_data_to_csv
 
 
 def user_data_page():
