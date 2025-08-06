@@ -1,6 +1,7 @@
 # staff_only.py
 import streamlit as st
 from src.neon_db import MetalEvapDB
+from utils.backup_utils import create_database_backup_zip
 
 
 def staff_only_page():
@@ -122,6 +123,48 @@ def staff_only_page():
 
                 except Exception as e:
                     st.error(f"Failed to add material: {e}")
+
+        # ===== DATABASE BACKUP SECTION =====
+    st.markdown("---")
+    st.header("Database Backup")
+
+    # Add explanation
+    st.write("""
+    Create and download a ZIP backup of the database tables. 
+    This will generate a single ZIP file containing CSV exports of users, materials, and tool data.
+    """)
+
+    # Center the backup button
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        # Backup button
+        if st.button(
+            "📥 Download Database Backup", type="primary", use_container_width=True
+        ):
+            with st.spinner("Creating backup ZIP file..."):
+                success, zip_data, result = create_database_backup_zip()
+
+                if success and zip_data:
+                    # Calculate size in KB
+                    size_kb = len(zip_data) / 1024
+
+                    # Show success message with download button
+                    st.success(
+                        f"✅ Backup ZIP created successfully! ({size_kb:.1f} KB)"
+                    )
+
+                    # Add download button
+                    st.download_button(
+                        label="📥 Download ZIP Backup",
+                        data=zip_data,
+                        file_name=result,
+                        mime="application/zip",
+                        key="download_zip_backup",
+                        use_container_width=True,
+                    )
+                else:
+                    st.error(f"❌ Backup failed: {result}")
 
     # Close database connection
     db.disconnect()
