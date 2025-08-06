@@ -286,6 +286,35 @@ class MetalEvapDB:
             logger.error(f"Error getting users: {e}")
             raise
 
+    def get_all_tool_data_with_joins(self) -> List[Dict[Any, Any]]:
+        """
+        Get all tool data with material and user information
+        Returns raw SQL result (list of dictionaries)
+        """
+        query = """
+        SELECT 
+            td.date_recorded,
+            CONCAT(u.first_name, ' ', u.last_name) as user_name,
+            m.material_name,
+            td.threshold_pct,
+            td.deposition_pct,
+            td.dep_rate,
+            td.thickness,
+            td.crystal_pct
+        FROM tool_data td
+        JOIN users u ON td.user_id = u.id
+        JOIN materials m ON td.material_id = m.id
+        ORDER BY td.date_recorded DESC
+        """
+
+        try:
+            result = self.execute_query(query, fetch=True)
+            logger.info(f"Retrieved {len(result) if result else 0} tool data records")
+            return result
+        except Exception as e:
+            logger.error(f"Error getting tool data with joins: {e}")
+            raise
+
     def clear_all_data(self):
         """Delete all data from all tables (but keep table structure)"""
         try:

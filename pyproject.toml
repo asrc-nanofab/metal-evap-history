@@ -15,5 +15,6 @@ dependencies = [
     "psycopg2-binary>=2.9.0",
     "plotly>=6.2.0",
     "seaborn>=0.13.2",
+    "pytest>=8.4.1",
 ]
 

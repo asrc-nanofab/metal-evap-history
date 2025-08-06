@@ -1,31 +1,26 @@
 # view_data.py
 import streamlit as st
 import pandas as pd
-from data_service import get_view_data, get_available_materials, debug_database_contents
+from src.data_service import get_view_data
 from src.graphing import display_chart, CHART_TYPES
 import logging
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging (only for errors)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
 def view_data_page():
-    # Debug database contents first
-    st.sidebar.button("Debug Database", on_click=debug_database_contents)
-
     # Get data from database using separated service
     df = get_view_data()
-    materials = get_available_materials()
 
-    # Debug info
-    logger.info(f"Retrieved DataFrame with shape: {df.shape}")
+    # Get unique materials from the DataFrame (only materials with data)
     if not df.empty:
-        logger.info(f"Data sample:\n{df.head()}")
+        materials = sorted(df["Material"].unique().tolist())
     else:
-        logger.warning("DataFrame is empty!")
+        materials = []
 
-    # Show debug info in sidebar
+    # Show basic info in sidebar
     st.sidebar.write(f"Total records: {len(df)}")
     st.sidebar.write(f"Available materials: {len(materials)}")
 
