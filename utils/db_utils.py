@@ -1,6 +1,14 @@
 import pandas as pd
 from src.neon_db import MetalEvapDB, MetalEvapData
 
+# File path constants
+BADGER_DATA_FILE = "data/2025_07_31_badger_metal_evap_data.txt"
+USER_RUN_DATA_FILE = "data/2025_march_user_run_data.csv"
+
+# ####################################################################
+# Reset Database -- for ease of reloading database
+# ####################################################################
+
 
 def reset_database():
     """Drop all tables and recreate them fresh"""
@@ -29,7 +37,7 @@ def read_unique_users_from_badger():
 
     # Read the file, skipping the malformed first line
     df = pd.read_csv(
-        "data/2025_07_31_badger_metal_evap_data.txt",
+        BADGER_DATA_FILE,
         sep="\t",  # Tab-separated
         skiprows=1,  # Skip the malformed first line
         names=[
@@ -97,7 +105,7 @@ def load_user_data():
 # Evaporation data import functions
 def load_user_evap_run_csv():
     """Load user evap run data from CSV and return clean DataFrame"""
-    df = pd.read_csv("data/2025_march_user_run_data.csv")
+    df = pd.read_csv(USER_RUN_DATA_FILE)
     print(f"Loaded {len(df)} records from CSV")
     return df
 
