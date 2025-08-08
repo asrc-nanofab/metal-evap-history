@@ -1,5 +1,16 @@
 from utils.db_utils import reset_database, load_user_data, import_evap_run_data
 from src.neon_db import MetalEvapDB
+import os
+import pandas as pd
+
+# Setup database with users
+reset_database()
+load_user_data()
+
+# Import evaporation run data
+print("Importing evaporation run data...")
+inserted_count = import_evap_run_data()
+print(f"Import complete - {inserted_count} records inserted")
 
 
 def test_new_db_functions():
@@ -109,14 +120,83 @@ def test_new_db_functions():
         traceback.print_exc()
 
 
-# Setup database with users
-reset_database()
-load_user_data()
+def combine_monthly_csv_files():
+    """
+    Combine all monthly combined CSV files into one master file.
 
-# Import evaporation run data
-print("Importing evaporation run data...")
-inserted_count = import_evap_run_data()
-print(f"Import complete - {inserted_count} records inserted")
+    This function looks for files matching the pattern:
+    data/output_csvs/2025_XX_Metal_Evap_Data/2025_XX_combined_all_pages.csv
 
-# Run the new test function
-test_new_db_functions()
+    It combines them in chronological order (Jan-Jun) with only one header row.
+    """
+    print("\n📊 Combining monthly CSV files into one master file...")
+
+    # Base directory for output CSVs
+    base_dir = "data/output_csvs"
+
+    # Output file path for the master combined CSV
+    output_file = os.path.join(base_dir, "2025_01_to_06_master_combined.csv")
+
+    # List to store DataFrames for each month
+    monthly_dfs = []
+
+    # Process months in order (01-06)
+    for month in range(1, 7):
+        month_str = f"{month:02d}"  # Format as 01, 02, etc.
+        month_dir = os.path.join(base_dir, f"2025_{month_str}_Metal_Evap_Data")
+        csv_file = os.path.join(month_dir, "combined_all_pages.csv")
+
+        if os.path.exists(csv_file):
+            print(f"  ✓ Reading: {csv_file}")
+            try:
+                # Read the CSV file
+                df = pd.read_csv(csv_file)
+                monthly_dfs.append(df)
+                print(f"    Found {len(df)} rows for month {month_str}")
+            except Exception as e:
+                print(f"  ✗ Error reading {csv_file}: {e}")
+        else:
+            print(f"  ✗ File not found: {csv_file}")
+
+    if not monthly_dfs:
+        print("❌ No monthly CSV files found to combine")
+        return False
+
+    # Combine all DataFrames
+    combined_df = pd.concat(monthly_dfs, ignore_index=True)
+
+    # Sort by date if possible
+    if "Date" in combined_df.columns:
+        try:
+            # Try to convert dates and sort
+            combined_df["Date"] = pd.to_datetime(combined_df["Date"], errors="coerce")
+            combined_df = combined_df.sort_values("Date")
+            # Convert back to string format
+            combined_df["Date"] = combined_df["Date"].dt.strftime("%m/%d/%Y")
+        except Exception as e:
+            print(f"⚠️ Could not sort by date: {e}")
+
+    # Save the combined DataFrame to CSV
+    combined_df.to_csv(output_file, index=False)
+
+    print(f"\n✅ Successfully combined {len(monthly_dfs)} monthly files")
+    print(f"✅ Total rows in combined file: {len(combined_df)}")
+    print(f"✅ Master file saved to: {output_file}")
+
+    return True
+
+
+# Uncomment the function you want to run:
+
+# Reset and populate database
+# reset_database()
+# load_user_data()
+# print("Importing evaporation run data...")
+# inserted_count = import_evap_run_data()
+# print(f"Import complete - {inserted_count} records inserted")
+
+# Test database functions
+# test_new_db_functions()
+
+# Combine monthly CSV files
+combine_monthly_csv_files()

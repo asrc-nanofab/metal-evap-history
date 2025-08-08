@@ -3,7 +3,7 @@ from src.neon_db import MetalEvapDB, MetalEvapData
 
 # File path constants
 BADGER_DATA_FILE = "data/2025_07_31_badger_metal_evap_data.txt"
-USER_RUN_DATA_FILE = "data/2025_march_user_run_data.csv"
+USER_RUN_DATA_FILE = "data/output_csvs/2025_01_to_06_master_combined.csv"
 
 # ####################################################################
 # Reset Database -- for ease of reloading database
@@ -200,7 +200,7 @@ def insert_tool_data(df_with_ids):
     with MetalEvapDB() as db:
         inserted_count = 0
 
-        for _, row in df_with_ids.iterrows():
+        for index, row in df_with_ids.iterrows():
             try:
                 tool_data = MetalEvapData(
                     user_id=row["user_id"],
@@ -223,7 +223,12 @@ def insert_tool_data(df_with_ids):
                 inserted_count += 1
 
             except Exception as e:
-                print(f"Error inserting row {inserted_count + 1}: {e}")
+                # Calculate actual CSV row number (index is 0-based, CSV rows start at 1, plus header row)
+                csv_row_number = index + 2
+                print(f"Error at CSV row {csv_row_number}: {e}")
+                print(
+                    f"Row data: Date={row['Date']}, User={row['User Name']}, Material={row['Materials']}"
+                )
                 raise
 
     print(f"Inserted {inserted_count} tool data records")

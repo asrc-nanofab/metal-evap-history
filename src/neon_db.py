@@ -164,6 +164,8 @@ class MetalEvapDB:
             ("Silicon Nitride", "SiN"),
             ("Aluminum Oxide", "Al2O3"),
             ("Germanium", "Ge"),
+            ("Cobalt", "Co"),
+            ("Nickel/Chrome", "Ni/Cr"),
         ]
 
         insert_query = """

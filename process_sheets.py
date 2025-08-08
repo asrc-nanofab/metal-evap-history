@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_unique_user_names(file_path="data/Ebeam_evap_recent_users.txt"):
+def get_unique_user_names(file_path="data/2025_07_31_badger_metal_evap_data.txt"):
     """
     Read the users file and return a unique list of 'first name last name' combinations.
 
@@ -190,9 +190,12 @@ def main():
     # Create extraction prompt with user names
     extraction_prompt = create_extraction_prompt(user_names)
 
+    folder_name = "2025_06_Metal_Evap_Data"
     # Configure your paths here
-    image_folder = "data/images"  # Change this to your actual folder path
-    output_dir = "data/output_csvs"  # Output directory for all CSV files
+    image_folder = (
+        f"data/images/{folder_name}"  # Change this to your actual folder path
+    )
+    output_dir = f"data/output_csvs/{folder_name}"  # Output directory for all CSV files
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
