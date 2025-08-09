@@ -42,6 +42,10 @@ def staff_only_page():
         st.session_state.material_success = False
         st.session_state.material_message = ""
 
+    # Initialize session state for navigation
+    if "active_section" not in st.session_state:
+        st.session_state.active_section = None
+
     # Show success/error messages if set
     if st.session_state.user_success:
         st.success(st.session_state.user_message)
@@ -53,12 +57,53 @@ def staff_only_page():
         st.session_state.material_success = False
         st.session_state.material_message = ""
 
-    # Create two columns for the two sections
-    col1, col2 = st.columns(2)
+    # Navigation buttons
+    st.markdown("---")
+    st.subheader("Select an action:")
+
+    # Create three columns for navigation buttons
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
+
+    with nav_col1:
+        if st.button(
+            "👤 Add User",
+            use_container_width=True,
+            type="primary"
+            if st.session_state.active_section == "add_user"
+            else "secondary",
+        ):
+            st.session_state.active_section = "add_user"
+            st.rerun()
+
+    with nav_col2:
+        if st.button(
+            "🧪 Add Material",
+            use_container_width=True,
+            type="primary"
+            if st.session_state.active_section == "add_material"
+            else "secondary",
+        ):
+            st.session_state.active_section = "add_material"
+            st.rerun()
+
+    with nav_col3:
+        if st.button(
+            "💾 Database Backup",
+            use_container_width=True,
+            type="primary"
+            if st.session_state.active_section == "database_backup"
+            else "secondary",
+        ):
+            st.session_state.active_section = "database_backup"
+            st.rerun()
+
+    st.markdown("---")
+
+    # ===== CONDITIONAL SECTIONS BASED ON NAVIGATION =====
 
     # ===== USER MANAGEMENT SECTION =====
-    with col1:
-        st.header("Add New User")
+    if st.session_state.active_section == "add_user":
+        st.header("👤 Add New User")
 
         # User input fields
         first_name = st.text_input("First Name*", key="user_first_name")
@@ -66,7 +111,9 @@ def staff_only_page():
         email = st.text_input("Email (Optional)", key="user_email")
 
         # Add user button
-        if st.button("Add User", key="add_user_button"):
+        if st.button(
+            "Add User", key="add_user_button", type="primary", use_container_width=True
+        ):
             # Validate inputs
             if not first_name or not last_name:
                 st.error("First name and last name are required")
@@ -92,15 +139,20 @@ def staff_only_page():
                     st.error(f"Failed to add user: {e}")
 
     # ===== MATERIAL MANAGEMENT SECTION =====
-    with col2:
-        st.header("Add New Material")
+    elif st.session_state.active_section == "add_material":
+        st.header("🧪 Add New Material")
 
         # Material input fields
         material_name = st.text_input("Material Name*", key="material_name")
         abbreviation = st.text_input("Abbreviation*", key="material_abbreviation")
 
         # Add material button
-        if st.button("Add Material", key="add_material_button"):
+        if st.button(
+            "Add Material",
+            key="add_material_button",
+            type="primary",
+            use_container_width=True,
+        ):
             # Validate inputs
             if not material_name or not abbreviation:
                 st.error("Material name and abbreviation are required")
@@ -124,47 +176,54 @@ def staff_only_page():
                 except Exception as e:
                     st.error(f"Failed to add material: {e}")
 
-        # ===== DATABASE BACKUP SECTION =====
-    st.markdown("---")
-    st.header("Database Backup")
+    # ===== DATABASE BACKUP SECTION =====
+    elif st.session_state.active_section == "database_backup":
+        st.header("💾 Database Backup")
 
-    # Add explanation
-    st.write("""
-    Create and download a ZIP backup of the database tables. 
-    This will generate a single ZIP file containing CSV exports of users, materials, and tool data.
-    """)
+        # Add explanation
+        st.write("""
+        Create and download a ZIP backup of the database tables. 
+        This will generate a single ZIP file containing CSV exports of users, materials, and tool data.
+        """)
 
-    # Center the backup button
-    col1, col2, col3 = st.columns([1, 2, 1])
+        # Center the backup button
+        col1, col2, col3 = st.columns([1, 2, 1])
 
-    with col2:
-        # Backup button
-        if st.button(
-            "📥 Download Database Backup", type="primary", use_container_width=True
-        ):
-            with st.spinner("Creating backup ZIP file..."):
+        with col2:
+            # Create backup data
+            with st.spinner("Preparing backup..."):
                 success, zip_data, result = create_database_backup_zip()
 
-                if success and zip_data:
-                    # Calculate size in KB
-                    size_kb = len(zip_data) / 1024
+            if success and zip_data:
+                # Calculate size in KB
+                size_kb = len(zip_data) / 1024
 
-                    # Show success message with download button
-                    st.success(
-                        f"✅ Backup ZIP created successfully! ({size_kb:.1f} KB)"
-                    )
+                # Single button that downloads immediately
+                st.download_button(
+                    label="📥 Download Database Backup",
+                    data=zip_data,
+                    file_name=result,
+                    mime="application/zip",
+                    key="download_zip_backup",
+                    use_container_width=True,
+                    type="primary",
+                )
 
-                    # Add download button
-                    st.download_button(
-                        label="📥 Download ZIP Backup",
-                        data=zip_data,
-                        file_name=result,
-                        mime="application/zip",
-                        key="download_zip_backup",
-                        use_container_width=True,
-                    )
-                else:
-                    st.error(f"❌ Backup failed: {result}")
+                # Show backup info
+                st.info(f"✅ Backup ready for download ({size_kb:.1f} KB)")
+            else:
+                st.error(f"❌ Backup failed: {result}")
+                # Show a disabled button for feedback
+                st.button(
+                    "📥 Download Database Backup",
+                    disabled=True,
+                    use_container_width=True,
+                    type="primary",
+                )
+
+    # If no section is selected, show a helpful message
+    elif st.session_state.active_section is None:
+        st.info("👆 Please select an action from the buttons above to get started.")
 
     # Close database connection
     db.disconnect()
