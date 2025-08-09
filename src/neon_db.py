@@ -326,6 +326,7 @@ class MetalEvapDB:
             td.deposition_pct,
             td.dep_rate,
             td.thickness,
+            td.measured_thickness,
             td.crystal_pct
         FROM tool_data td
         JOIN users u ON td.user_id = u.id

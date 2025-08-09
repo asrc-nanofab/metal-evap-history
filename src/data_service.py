@@ -19,7 +19,7 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
         raw_result: Raw SQL result (list of dictionaries) from database
 
     Returns:
-        Formatted DataFrame with all columns from database query
+        Formatted DataFrame with all columns from database query including measured_thickness
     """
     if not raw_result:
         logger.warning("No data found in database")
@@ -35,6 +35,7 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
                 "Power_Deposition",
                 "Rate",
                 "Thickness",
+                "Measured_Thickness",
                 "Crystal_Monitor",
             ]
         )
@@ -54,6 +55,7 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
     formatted_df["Power_Deposition"] = raw_df["deposition_pct"]
     formatted_df["Rate"] = raw_df["dep_rate"]
     formatted_df["Thickness"] = raw_df["thickness"]
+    formatted_df["Measured_Thickness"] = raw_df["measured_thickness"]
     formatted_df["Crystal_Monitor"] = raw_df["crystal_pct"]
 
     return formatted_df

@@ -47,16 +47,16 @@ def user_data_page():
         filtered_df = df[df["User"] == selected_user_name]
         st.sidebar.info(f"Showing data for {selected_user_name}")
 
-    # Show basic info in sidebar
-    st.sidebar.write(f"Total records: {len(filtered_df)}")
+    # # Show basic info in sidebar
+    # st.sidebar.write(f"Total records: {len(filtered_df)}")
 
-    if not filtered_df.empty:
-        st.sidebar.write(
-            f"Date range: {filtered_df['Date'].min().strftime('%m/%d/%Y')} to {filtered_df['Date'].max().strftime('%m/%d/%Y')}"
-        )
-        st.sidebar.write(
-            f"Materials: {', '.join(sorted(filtered_df['Material'].unique()))}"
-        )
+    # if not filtered_df.empty:
+    #     st.sidebar.write(
+    #         f"Date range: {filtered_df['Date'].min().strftime('%m/%d/%Y')} to {filtered_df['Date'].max().strftime('%m/%d/%Y')}"
+    #     )
+    #     st.sidebar.write(
+    #         f"Materials: {', '.join(sorted(filtered_df['Material'].unique()))}"
+    #     )
 
     if filtered_df.empty:
         st.error("No data found for the selected user.")
@@ -86,6 +86,7 @@ def user_data_page():
         "Power_Deposition",
         "Rate",
         "Thickness",
+        "Measured_Thickness",
         "Crystal_Monitor",
     ]
     df_display = df_display[display_columns]

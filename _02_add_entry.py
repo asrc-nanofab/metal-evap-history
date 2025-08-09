@@ -17,12 +17,7 @@ def add_entry_page():
     if "success_message" not in st.session_state:
         st.session_state.success_message = ""
 
-    # Show success message if set
-    if st.session_state.show_success:
-        st.success(st.session_state.success_message)
-        # Clear the success message after showing it
-        st.session_state.show_success = False
-        st.session_state.success_message = ""
+    # Success message will be shown after the Add Entry button
 
     # Initialize database connection
     try:
@@ -76,6 +71,7 @@ def add_entry_page():
         "Threshold Power (%)*",
         min_value=0.0,
         max_value=100.0,
+        value=None,
         step=0.1,
         placeholder="Enter threshold power percentage",
         help="Enter threshold power percentage",
@@ -86,6 +82,7 @@ def add_entry_page():
         "Deposition Power (%)*",
         min_value=0.0,
         max_value=100.0,
+        value=None,
         step=0.1,
         placeholder="Enter deposition power percentage",
         help="Enter deposition power percentage",
@@ -96,9 +93,10 @@ def add_entry_page():
         "Rate (A/s)*",
         min_value=0.0,
         max_value=100.0,
+        value=None,
         step=0.01,
         placeholder="Enter deposition rate in Angstroms per second",
-        help="Enter deposition rate in Angstroms per second",
+        help="Enter deposition rate in Angstroms per second (A/s)",
         key=f"rate_input_{st.session_state.form_counter}",
     )
 
@@ -106,16 +104,20 @@ def add_entry_page():
         "Thickness (nm)*",
         min_value=0.0,
         max_value=10000.0,
+        value=None,
         step=0.01,
+        placeholder="Enter thickness in nanometers",
         help="Enter thickness in nanometers",
         key=f"thickness_input_{st.session_state.form_counter}",
     )
 
     measured = st.number_input(
-        "Measured Thickness (nm)",
+        "Measured Thickness (nm) (OPTIONAL)",
         min_value=0.0,
         max_value=10000.0,
+        value=None,
         step=0.01,
+        placeholder="This value is optional and can be entered later",
         help="Enter measured thickness in nanometers (optional)",
         key=f"measured_input_{st.session_state.form_counter}",
     )
@@ -124,6 +126,7 @@ def add_entry_page():
         "Crystal Monitor*",
         min_value=0.0,
         max_value=100.0,
+        value=None,
         step=0.01,
         placeholder="Enter crystal monitor reading",
         help="Enter crystal monitor reading",
@@ -149,15 +152,15 @@ def add_entry_page():
             validation_errors.append("Please select a material")
 
         # Core required fields (must be > 0)
-        if threshold_power <= 0:
+        if threshold_power is None or threshold_power <= 0:
             validation_errors.append("Threshold Power must be greater than 0")
-        if deposition_power <= 0:
+        if deposition_power is None or deposition_power <= 0:
             validation_errors.append("Deposition Power must be greater than 0")
-        if rate <= 0:
+        if rate is None or rate <= 0:
             validation_errors.append("Rate must be greater than 0")
-        if thickness <= 0:
+        if thickness is None or thickness <= 0:
             validation_errors.append("Thickness must be greater than 0")
-        if crystal_monitor <= 0:
+        if crystal_monitor is None or crystal_monitor <= 0:
             validation_errors.append("Crystal Monitor must be greater than 0")
 
         # Display validation errors
@@ -176,7 +179,9 @@ def add_entry_page():
                     deposition_pct=deposition_power,
                     dep_rate=rate,
                     crystal_pct=crystal_monitor,
-                    measured_thickness=measured if measured > 0 else None,
+                    measured_thickness=measured
+                    if measured is not None and measured > 0
+                    else None,
                     notes=notes if notes.strip() else None,
                 )
 
@@ -194,6 +199,13 @@ def add_entry_page():
 
             except Exception as e:
                 st.error(f"Failed to add entry: {e}")
+
+    # Show success message if set (appears after the button)
+    if st.session_state.show_success:
+        st.success(st.session_state.success_message)
+        # Clear the success message after showing it
+        st.session_state.show_success = False
+        st.session_state.success_message = ""
 
     # Close database connection
     db.disconnect()
