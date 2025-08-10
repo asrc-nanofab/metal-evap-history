@@ -14,7 +14,7 @@ PAGES = {
     "View Data": view_data_page,
     "Add Entry": add_entry_page,
     "User Data": user_data_page,
-    "⚠️ STAFF ADMIN ONLY ⚠️": staff_only_page,
+    "⚠️ STAFF ONLY ⚠️": staff_only_page,
 }
 
 # Sidebar navigation

@@ -12,6 +12,16 @@ from typing import Optional
 import streamlit as st
 
 
+# Available chart types for UI selection
+CHART_TYPES = {
+    "box": "Box Plot (Distribution by Date)",
+    "line": "Line Plot (Trends Over Time)",
+    "scatter": "Scatter Plot (Deposition vs Threshold)",
+    "histogram": "Histogram (Value Distributions)",
+    # "matplotlib_line": "Line Plot (Matplotlib)",
+}
+
+
 def create_power_box_plot(
     data: pd.DataFrame,
     material: str,
@@ -268,18 +278,6 @@ def create_power_histogram(
         shared_yaxes=True,
     )
 
-    # Add deposition power histogram
-    fig.add_trace(
-        go.Histogram(
-            x=data["Power_Deposition"],
-            name="Deposition Power",
-            opacity=0.7,
-            marker_color="#1f77b4",
-        ),
-        row=1,
-        col=1,
-    )
-
     # Add threshold power histogram
     fig.add_trace(
         go.Histogram(
@@ -287,6 +285,18 @@ def create_power_histogram(
             name="Threshold Power",
             opacity=0.7,
             marker_color="#ff7f0e",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Add deposition power histogram
+    fig.add_trace(
+        go.Histogram(
+            x=data["Power_Deposition"],
+            name="Deposition Power",
+            opacity=0.7,
+            marker_color="#1f77b4",
         ),
         row=1,
         col=2,
@@ -393,13 +403,3 @@ def display_chart(chart_type: str, data: pd.DataFrame, material: str, **kwargs) 
         st.pyplot(fig)
     else:
         st.error(f"Unknown chart type: {chart_type}")
-
-
-# Available chart types for UI selection
-CHART_TYPES = {
-    "box": "Box Plot (Distribution by Date)",
-    "line": "Line Plot (Trends Over Time)",
-    "scatter": "Scatter Plot (Deposition vs Threshold)",
-    "histogram": "Histogram (Value Distributions)",
-    "matplotlib_line": "Line Plot (Matplotlib)",
-}

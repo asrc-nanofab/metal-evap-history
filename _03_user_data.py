@@ -11,6 +11,15 @@ logger = logging.getLogger(__name__)
 
 def user_data_page():
     st.title("📊 User Data")
+
+    # Initialize session state for success message
+    if "user_data_show_success" not in st.session_state:
+        st.session_state.user_data_show_success = False
+    if "user_data_success_message" not in st.session_state:
+        st.session_state.user_data_success_message = ""
+
+    # Success message will be shown after the Save Changes button
+
     # below the title, add a horizontal line
     st.info(
         "This page allows you to view and edit deposition data for a specific user."
@@ -100,9 +109,13 @@ def user_data_page():
     if "edit_mode" not in st.session_state:
         st.session_state.edit_mode = False
 
-    # Toggle edit mode with button
-    if st.button("✏️ Edit Row", type="primary"):
-        st.session_state.edit_mode = not st.session_state.edit_mode
+    # Toggle edit mode with button (only show for specific users, not "All Users")
+    if selected_user_name != "All Users":
+        if st.button("✏️ Edit Row", type="primary"):
+            st.session_state.edit_mode = not st.session_state.edit_mode
+    else:
+        # Hide edit button and ensure edit mode is off when viewing all users
+        st.session_state.edit_mode = False
 
     if st.session_state.edit_mode and len(df_display) > 0:
         st.subheader("✏️ Edit Row")
@@ -358,9 +371,9 @@ def user_data_page():
                                 db.disconnect()
 
                                 if success:
-                                    st.success(
-                                        f"✅ Successfully updated entry ID {tool_data_id}!"
-                                    )
+                                    # Set success message in session state
+                                    st.session_state.user_data_success_message = f"✅ Successfully updated entry ID {tool_data_id}!"
+                                    st.session_state.user_data_show_success = True
                                     st.rerun()
                                 else:
                                     st.error("❌ No changes were made to the database.")
@@ -371,7 +384,17 @@ def user_data_page():
 
                 with col_cancel:
                     if st.button("❌ Cancel", key=f"cancel_{selected_row}"):
-                        st.info("Edit cancelled. No changes were made.")
-                        st.rerun()  # Refresh the page to hide edit section
+                        # Close the edit window by turning off edit mode
+                        st.session_state.edit_mode = False
+                        st.rerun()  # Refresh to close the edit section
+
+                # Show success message if set (appears after the buttons)
+                if st.session_state.user_data_show_success:
+                    st.success(st.session_state.user_data_success_message)
+                    # Use a button to clear the message
+                    if st.button("✅ Dismiss", key=f"dismiss_{selected_row}"):
+                        st.session_state.user_data_show_success = False
+                        st.session_state.user_data_success_message = ""
+                        st.rerun()
     elif st.session_state.edit_mode and len(df_display) == 0:
         st.warning("No data available to edit.")
