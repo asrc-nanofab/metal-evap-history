@@ -114,16 +114,21 @@ def staff_only_page():
         if st.button(
             "Add User", key="add_user_button", type="primary", use_container_width=True
         ):
+            # Strip whitespace from inputs
+            first_name_clean = first_name.strip()
+            last_name_clean = last_name.strip()
+            email_clean = email.strip() if email else None
+
             # Validate inputs
-            if not first_name or not last_name:
+            if not first_name_clean or not last_name_clean:
                 st.error("First name and last name are required")
             else:
                 try:
                     # Add user to database
                     user_id = db.add_user(
-                        first_name=first_name,
-                        last_name=last_name,
-                        email=email if email else None,
+                        first_name=first_name_clean,
+                        last_name=last_name_clean,
+                        email=email_clean,
                     )
 
                     # Set success message
@@ -153,15 +158,19 @@ def staff_only_page():
             type="primary",
             use_container_width=True,
         ):
+            # Strip whitespace from inputs
+            material_name_clean = material_name.strip()
+            abbreviation_clean = abbreviation.strip()
+
             # Validate inputs
-            if not material_name or not abbreviation:
+            if not material_name_clean or not abbreviation_clean:
                 st.error("Material name and abbreviation are required")
             else:
                 try:
-                    # Check if we need to add a function to add materials
-                    # For now, we'll add a placeholder
+                    # Add material to database
                     success = db.add_material(  # noqa: F841
-                        material_name=material_name, abbreviation=abbreviation
+                        material_name=material_name_clean,
+                        abbreviation=abbreviation_clean,
                     )
 
                     # Set success message

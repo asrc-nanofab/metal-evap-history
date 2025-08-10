@@ -184,10 +184,30 @@ class MetalEvapDB:
             logger.error(f"Error populating materials: {e}")
             raise
 
+    def _user_exists(self, first_name: str, last_name: str) -> bool:
+        """Check if user already exists by first and last name"""
+        query = """
+        SELECT id FROM users 
+        WHERE first_name = %s AND last_name = %s;
+        """
+
+        try:
+            result = self.execute_query(query, (first_name, last_name), fetch=True)
+            return len(result) > 0
+        except Exception as e:
+            logger.error(f"Error checking user existence: {e}")
+            raise
+
     def add_user(
         self, first_name: str, last_name: str, email: Optional[str] = None
     ) -> int:
-        """Add a new user and return the user ID"""
+        """Add a new user and return the user ID. Raises ValueError if user already exists."""
+        # Check if user already exists
+        if self._user_exists(first_name, last_name):
+            raise ValueError(
+                f"User '{first_name} {last_name}' already exists in the database"
+            )
+
         query = """
         INSERT INTO users (first_name, last_name, email)
         VALUES (%s, %s, %s)
