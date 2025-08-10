@@ -454,76 +454,62 @@ class MetalEvapDB:
     def update_tool_data(
         self,
         tool_data_id: int,
-        user_name: Optional[str] = None,
-        material_name: Optional[str] = None,
-        date_recorded: Optional[str] = None,
-        threshold_pct: Optional[float] = None,
-        deposition_pct: Optional[float] = None,
-        dep_rate: Optional[float] = None,
-        thickness: Optional[float] = None,
+        user_name: str,
+        material_name: str,
+        date_recorded: str,
+        thickness: float,
+        threshold_pct: float,
+        deposition_pct: float,
+        dep_rate: float,
+        crystal_pct: float,
         measured_thickness: Optional[float] = None,
-        crystal_pct: Optional[float] = None,
         notes: Optional[str] = None,
     ) -> bool:
         """
-        Update an existing tool data entry by ID
-        Only updates fields that are provided (not None)
-        Returns True if successful, False if no changes were made
+        Update an existing tool data entry - reuses add_entry_from_widgets logic
+        Same parameters as add_entry_from_widgets but updates instead of inserts
         """
-        # Build dynamic UPDATE query based on provided fields
-        update_fields = []
-        update_values = []
+        # Reuse all the validation logic from add_entry_from_widgets
+        user_id = self._get_user_id_by_name(user_name)
+        if user_id is None:
+            raise ValueError(f"User '{user_name}' not found in database")
 
-        # Handle user name -> user_id conversion
-        if user_name is not None:
-            user_id = self._get_user_id_by_name(user_name)
-            if user_id is None:
-                raise ValueError(f"User '{user_name}' not found in database")
-            update_fields.append("user_id = %s")
-            update_values.append(user_id)
+        material_id = self.get_material_id(material_name)
+        if material_id is None:
+            raise ValueError(f"Material '{material_name}' not found in database")
 
-        # Handle material name -> material_id conversion
-        if material_name is not None:
-            material_id = self.get_material_id(material_name)
-            if material_id is None:
-                raise ValueError(f"Material '{material_name}' not found in database")
-            update_fields.append("material_id = %s")
-            update_values.append(material_id)
+        # Create MetalEvapData object (same as add_entry_from_widgets)
+        evap_data = MetalEvapData(
+            user_id=user_id,
+            material_id=material_id,
+            date_recorded=date_recorded,
+            thickness=thickness,
+            threshold_pct=threshold_pct,
+            deposition_pct=deposition_pct,
+            dep_rate=dep_rate,
+            crystal_pct=crystal_pct,
+            measured_thickness=measured_thickness,
+            notes=notes,
+        )
 
-        # Handle direct field updates
-        field_mappings = {
-            "date_recorded": date_recorded,
-            "threshold_pct": threshold_pct,
-            "deposition_pct": deposition_pct,
-            "dep_rate": dep_rate,
-            "thickness": thickness,
-            "measured_thickness": measured_thickness,
-            "crystal_pct": crystal_pct,
-            "notes": notes,
-        }
+        # Generate UPDATE query using same logic as _evap_data_to_sql_insert
+        field_data = {}
+        for field in fields(evap_data):
+            value = getattr(evap_data, field.name)
+            if value is not None:
+                field_data[field.name] = value
 
-        for field_name, field_value in field_mappings.items():
-            if field_value is not None:
-                update_fields.append(f"{field_name} = %s")
-                update_values.append(field_value)
+        update_assignments = [f"{field} = %s" for field in field_data.keys()]
+        values = list(field_data.values()) + [tool_data_id]
 
-        # If no fields to update, return False
-        if not update_fields:
-            logger.warning("No fields provided for update")
-            return False
-
-        # Add the tool_data_id for the WHERE clause
-        update_values.append(tool_data_id)
-
-        # Construct the UPDATE query
         query = f"""
         UPDATE tool_data 
-        SET {", ".join(update_fields)}
+        SET {", ".join(update_assignments)}
         WHERE id = %s;
         """
 
         try:
-            rows_affected = self.execute_query(query, tuple(update_values))
+            rows_affected = self.execute_query(query, tuple(values))
             if rows_affected > 0:
                 logger.info(f"Updated tool data entry ID: {tool_data_id}")
                 return True

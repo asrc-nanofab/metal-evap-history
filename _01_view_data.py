@@ -33,7 +33,12 @@ def view_data_page():
         st.error("No materials found in database.")
         return
 
-    material = st.sidebar.selectbox("Select material", materials)
+    # Set default to Gold if it exists, otherwise use first material
+    default_index = 0
+    if "Gold" in materials:
+        default_index = materials.index("Gold")
+
+    material = st.sidebar.selectbox("Select material", materials, index=default_index)
 
     # Filter data using normalized material
     filtered = df[df["Material"] == material].sort_values("Date")

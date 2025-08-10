@@ -27,6 +27,7 @@ def add_entry_page():
         return
 
     # Get data for dropdowns
+    # Get directly from database and not from existing tool data table
     try:
         users = db.get_user_names_for_dropdown()
         materials = [row["material_name"] for row in db.get_all_materials()]
@@ -94,7 +95,7 @@ def add_entry_page():
         min_value=0.0,
         max_value=100.0,
         value=None,
-        step=0.01,
+        step=0.1,
         placeholder="Enter deposition rate in Angstroms per second",
         help="Enter deposition rate in Angstroms per second (A/s)",
         key=f"rate_input_{st.session_state.form_counter}",
@@ -105,7 +106,7 @@ def add_entry_page():
         min_value=0.0,
         max_value=10000.0,
         value=None,
-        step=0.01,
+        step=0.1,
         placeholder="Enter thickness displayed in nm",
         help="Enter thickness displayed in nm",
         key=f"thickness_input_{st.session_state.form_counter}",
@@ -116,7 +117,7 @@ def add_entry_page():
         min_value=0.0,
         max_value=10000.0,
         value=None,
-        step=0.01,
+        step=0.1,
         placeholder="This value is optional and can be updated later",
         help="Enter measured thickness in nanometers (optional)",
         key=f"measured_input_{st.session_state.form_counter}",
@@ -127,7 +128,7 @@ def add_entry_page():
         min_value=0.0,
         max_value=100.0,
         value=None,
-        step=0.01,
+        step=0.1,
         placeholder="Enter crystal monitor reading",
         help="Enter crystal monitor reading",
         key=f"crystal_monitor_input_{st.session_state.form_counter}",
