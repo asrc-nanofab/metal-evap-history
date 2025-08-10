@@ -274,7 +274,7 @@ def create_power_histogram(
     fig = make_subplots(
         rows=1,
         cols=2,
-        subplot_titles=("Deposition Power", "Threshold Power"),
+        subplot_titles=("Threshold Power", "Deposition Power"),
         shared_yaxes=True,
     )
 
