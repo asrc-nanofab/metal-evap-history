@@ -89,11 +89,11 @@ def view_data_page():
         # Select only the columns we want to display
         display_columns = [
             "Date",
-            "Threshold_Power",
-            "Power_Deposition",
-            "Rate",
-            "Thickness",
-            "Crystal_Monitor",
+            "Threshold (%)",
+            "Deposition (%)",
+            "Rate (A/s)",
+            "Thickness (nm)",
+            "Crystal Monitor (%)",
         ]
         table_df = table_df[display_columns]
 

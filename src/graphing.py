@@ -14,10 +14,10 @@ import streamlit as st
 
 # Available chart types for UI selection
 CHART_TYPES = {
+    "histogram": "Histogram (Value Distributions)",
     "box": "Box Plot (Distribution by Date)",
     "line": "Line Plot (Trends Over Time)",
     "scatter": "Scatter Plot (Deposition vs Threshold)",
-    "histogram": "Histogram (Value Distributions)",
     # "matplotlib_line": "Line Plot (Matplotlib)",
 }
 
@@ -68,7 +68,7 @@ def create_power_box_plot(
     df_long = pd.melt(
         df_plot,
         id_vars=["Date_Str"],
-        value_vars=["Power_Deposition", "Threshold_Power"],
+        value_vars=["Deposition (%)", "Threshold (%)"],
         var_name="Power_Type",
         value_name="Power",
     )
@@ -76,8 +76,8 @@ def create_power_box_plot(
     # Rename for better legend
     df_long["Power_Type"] = df_long["Power_Type"].map(
         {
-            "Power_Deposition": "Deposition Power",
-            "Threshold_Power": "Threshold Power",
+            "Deposition (%)": "Deposition Power",
+            "Threshold (%)": "Threshold Power",
         }
     )
 
@@ -144,7 +144,7 @@ def create_power_line_plot(
     fig.add_trace(
         go.Scatter(
             x=data["Date"],
-            y=data["Power_Deposition"],
+            y=data["Deposition (%)"],
             mode="lines+markers",
             name="Deposition Power",
             line=dict(color="#1f77b4"),
@@ -156,7 +156,7 @@ def create_power_line_plot(
     fig.add_trace(
         go.Scatter(
             x=data["Date"],
-            y=data["Threshold_Power"],
+            y=data["Threshold (%)"],
             mode="lines+markers",
             name="Threshold Power",
             line=dict(color="#ff7f0e"),
@@ -211,12 +211,12 @@ def create_power_scatter_plot(
         if show_trendline:
             fig = px.scatter(
                 data,
-                x="Threshold_Power",
-                y="Power_Deposition",
+                x="Threshold (%)",
+                y="Deposition (%)",
                 title=title or f"Deposition vs Threshold Power for {material}",
                 labels={
-                    "Threshold_Power": "Threshold Power (%)",
-                    "Power_Deposition": "Deposition Power (%)",
+                    "Threshold (%)": "Threshold Power (%)",
+                    "Deposition (%)": "Deposition Power (%)",
                 },
                 trendline="ols",  # Add trend line
             )
@@ -226,12 +226,12 @@ def create_power_scatter_plot(
         # Fallback to scatter plot without trendline if statsmodels not available
         fig = px.scatter(
             data,
-            x="Threshold_Power",
-            y="Power_Deposition",
+            x="Threshold (%)",
+            y="Deposition (%)",
             title=title or f"Deposition vs Threshold Power for {material}",
             labels={
-                "Threshold_Power": "Threshold Power (%)",
-                "Power_Deposition": "Deposition Power (%)",
+                "Threshold (%)": "Threshold Power (%)",
+                "Deposition (%)": "Deposition Power (%)",
             },
         )
 
@@ -281,7 +281,7 @@ def create_power_histogram(
     # Add threshold power histogram
     fig.add_trace(
         go.Histogram(
-            x=data["Threshold_Power"],
+            x=data["Threshold (%)"],
             name="Threshold Power",
             opacity=0.7,
             marker_color="#ff7f0e",
@@ -293,7 +293,7 @@ def create_power_histogram(
     # Add deposition power histogram
     fig.add_trace(
         go.Histogram(
-            x=data["Power_Deposition"],
+            x=data["Deposition (%)"],
             name="Deposition Power",
             opacity=0.7,
             marker_color="#1f77b4",
@@ -349,14 +349,14 @@ def create_matplotlib_line_plot(
     # Plot lines
     ax.plot(
         data["Date"],
-        data["Power_Deposition"],
+        data["Deposition (%)"],
         label="Deposition Power",
         marker="o",
         linewidth=2,
     )
     ax.plot(
         data["Date"],
-        data["Threshold_Power"],
+        data["Threshold (%)"],
         label="Threshold Power",
         marker="o",
         linewidth=2,

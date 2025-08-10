@@ -31,12 +31,12 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
                 "Date",
                 "User",
                 "Material",
-                "Threshold_Power",
-                "Power_Deposition",
-                "Rate",
-                "Thickness",
-                "Measured_Thickness",
-                "Crystal_Monitor",
+                "Threshold (%)",
+                "Deposition (%)",
+                "Rate (A/s)",
+                "Thickness (nm)",
+                "Measured_Thickness (nm)",
+                "Crystal Monitor (%)",
                 "Notes",
             ]
         )
@@ -52,12 +52,12 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
     formatted_df["Date"] = pd.to_datetime(raw_df["date_recorded"])
     formatted_df["User"] = raw_df["user_name"]
     formatted_df["Material"] = raw_df["material_name"]
-    formatted_df["Threshold_Power"] = raw_df["threshold_pct"]
-    formatted_df["Power_Deposition"] = raw_df["deposition_pct"]
-    formatted_df["Rate"] = raw_df["dep_rate"]
-    formatted_df["Thickness"] = raw_df["thickness"]
-    formatted_df["Measured_Thickness"] = raw_df["measured_thickness"]
-    formatted_df["Crystal_Monitor"] = raw_df["crystal_pct"]
+    formatted_df["Threshold (%)"] = raw_df["threshold_pct"]
+    formatted_df["Deposition (%)"] = raw_df["deposition_pct"]
+    formatted_df["Rate (A/s)"] = raw_df["dep_rate"]
+    formatted_df["Thickness (nm)"] = raw_df["thickness"]
+    formatted_df["Measured_Thickness (nm)"] = raw_df["measured_thickness"]
+    formatted_df["Crystal Monitor (%)"] = raw_df["crystal_pct"]
     formatted_df["Notes"] = raw_df["notes"]
 
     return formatted_df

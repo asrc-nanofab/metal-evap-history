@@ -190,10 +190,7 @@ def staff_only_page():
         st.header("💾 Database Backup")
 
         # Add explanation
-        st.write("""
-        Create and download a ZIP backup of the database tables. 
-        This will generate a single ZIP file containing CSV exports of users, materials, and tool data.
-        """)
+        st.write("Download a ZIP backup containing CSV exports of all database tables.")
 
         # Center the backup button
         col1, col2, col3 = st.columns([1, 2, 1])

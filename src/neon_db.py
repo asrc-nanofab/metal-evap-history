@@ -306,6 +306,15 @@ class MetalEvapDB:
             )
             return material_id
         except Exception as e:
+            error_msg = str(e)
+            # Check for duplicate material name constraint violation
+            if (
+                "materials_material_name_key" in error_msg
+                or "duplicate key value" in error_msg
+            ):
+                raise ValueError(
+                    f"Material '{material_name}' already exists in the database"
+                )
             logger.error(f"Error adding material: {e}")
             raise
 

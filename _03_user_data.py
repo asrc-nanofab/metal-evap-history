@@ -82,12 +82,12 @@ def user_data_page():
         "Date",
         "User",
         "Material",
-        "Threshold_Power",
-        "Power_Deposition",
-        "Rate",
-        "Thickness",
-        "Measured_Thickness",
-        "Crystal_Monitor",
+        "Threshold (%)",
+        "Deposition (%)",
+        "Rate (A/s)",
+        "Thickness (nm)",
+        "Measured_Thickness (nm)",
+        "Crystal Monitor (%)",
         "Notes",
     ]
     df_display = df_display[display_columns]
@@ -173,39 +173,39 @@ def user_data_page():
                 )
                 st.text_input(
                     "Threshold Power:",
-                    value=str(original_row["Threshold_Power"]),
+                    value=str(original_row["Threshold (%)"]),
                     disabled=True,
                     key=f"current_threshold_{selected_row}",
                 )
                 st.text_input(
                     "Power Deposition:",
-                    value=str(original_row["Power_Deposition"]),
+                    value=str(original_row["Deposition (%)"]),
                     disabled=True,
                     key=f"current_power_{selected_row}",
                 )
                 st.text_input(
                     "Rate:",
-                    value=str(original_row["Rate"]),
+                    value=str(original_row["Rate (A/s)"]),
                     disabled=True,
                     key=f"current_rate_{selected_row}",
                 )
                 st.text_input(
                     "Thickness:",
-                    value=str(original_row["Thickness"]),
+                    value=str(original_row["Thickness (nm)"]),
                     disabled=True,
                     key=f"current_thickness_{selected_row}",
                 )
                 st.text_input(
                     "Measured Thickness:",
-                    value=str(original_row["Measured_Thickness"])
-                    if original_row["Measured_Thickness"] is not None
+                    value=str(original_row["Measured_Thickness (nm)"])
+                    if original_row["Measured_Thickness (nm)"] is not None
                     else "Not measured",
                     disabled=True,
                     key=f"current_measured_{selected_row}",
                 )
                 st.text_input(
                     "Crystal Monitor:",
-                    value=str(original_row["Crystal_Monitor"]),
+                    value=str(original_row["Crystal Monitor (%)"]),
                     disabled=True,
                     key=f"current_crystal_{selected_row}",
                 )
@@ -244,7 +244,7 @@ def user_data_page():
                     "Threshold Power:",
                     min_value=0.0,
                     max_value=100.0,
-                    value=float(original_row["Threshold_Power"]),
+                    value=float(original_row["Threshold (%)"]),
                     step=0.1,
                     key=f"threshold_{selected_row}",
                 )
@@ -253,7 +253,7 @@ def user_data_page():
                     "Power Deposition:",
                     min_value=0.0,
                     max_value=100.0,
-                    value=float(original_row["Power_Deposition"]),
+                    value=float(original_row["Deposition (%)"]),
                     step=0.1,
                     key=f"power_{selected_row}",
                 )
@@ -262,7 +262,7 @@ def user_data_page():
                     "Rate:",
                     min_value=0.0,
                     max_value=100.0,
-                    value=float(original_row["Rate"]),
+                    value=float(original_row["Rate (A/s)"]),
                     step=0.1,
                     key=f"rate_{selected_row}",
                 )
@@ -271,7 +271,7 @@ def user_data_page():
                     "Thickness:",
                     min_value=0.0,
                     max_value=10000.0,
-                    value=float(original_row["Thickness"]),
+                    value=float(original_row["Thickness (nm)"]),
                     step=0.1,
                     key=f"thickness_{selected_row}",
                 )
@@ -280,8 +280,8 @@ def user_data_page():
                     "Measured Thickness:",
                     min_value=0.0,
                     max_value=10000.0,
-                    value=float(original_row["Measured_Thickness"])
-                    if original_row["Measured_Thickness"] is not None
+                    value=float(original_row["Measured_Thickness (nm)"])
+                    if original_row["Measured_Thickness (nm)"] is not None
                     else None,
                     step=0.1,
                     help="Optional - leave empty if not measured",
@@ -292,7 +292,7 @@ def user_data_page():
                     "Crystal Monitor:",
                     min_value=0.0,
                     max_value=100.0,
-                    value=float(original_row["Crystal_Monitor"]),
+                    value=float(original_row["Crystal Monitor (%)"]),
                     step=0.1,
                     key=f"crystal_{selected_row}",
                 )
