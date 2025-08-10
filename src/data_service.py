@@ -37,6 +37,7 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
                 "Thickness",
                 "Measured_Thickness",
                 "Crystal_Monitor",
+                "Notes",
             ]
         )
 
@@ -57,6 +58,7 @@ def format_tool_data_complete(raw_result: list) -> pd.DataFrame:
     formatted_df["Thickness"] = raw_df["thickness"]
     formatted_df["Measured_Thickness"] = raw_df["measured_thickness"]
     formatted_df["Crystal_Monitor"] = raw_df["crystal_pct"]
+    formatted_df["Notes"] = raw_df["notes"]
 
     return formatted_df
 

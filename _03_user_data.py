@@ -1,6 +1,7 @@
 # user_data.py
 import streamlit as st
 from src.data_service import get_and_format_tool_data
+from src.neon_db import MetalEvapDB
 import logging
 
 # Set up logging (only for errors)
@@ -47,17 +48,6 @@ def user_data_page():
         filtered_df = df[df["User"] == selected_user_name]
         st.sidebar.info(f"Showing data for {selected_user_name}")
 
-    # # Show basic info in sidebar
-    # st.sidebar.write(f"Total records: {len(filtered_df)}")
-
-    # if not filtered_df.empty:
-    #     st.sidebar.write(
-    #         f"Date range: {filtered_df['Date'].min().strftime('%m/%d/%Y')} to {filtered_df['Date'].max().strftime('%m/%d/%Y')}"
-    #     )
-    #     st.sidebar.write(
-    #         f"Materials: {', '.join(sorted(filtered_df['Material'].unique()))}"
-    #     )
-
     if filtered_df.empty:
         st.error("No data found for the selected user.")
         return
@@ -88,6 +78,7 @@ def user_data_page():
         "Thickness",
         "Measured_Thickness",
         "Crystal_Monitor",
+        "Notes",
     ]
     df_display = df_display[display_columns]
 
@@ -96,6 +87,7 @@ def user_data_page():
         df_display["Date"] = df_display["Date"].dt.strftime("%m/%d/%Y")
 
     # Add row numbers for easier reference
+    # The index will start at 1, not 0 !!
     df_display.index = range(1, len(df_display) + 1)
 
     # Display the table with row selection
@@ -116,14 +108,21 @@ def user_data_page():
         st.subheader("✏️ Edit Row")
         st.info("Select a row number to view and edit its data.")
 
-        # Row selector
-        selected_row = st.selectbox(
-            "Choose a row to edit:",
-            options=df_display.index.tolist(),
-            format_func=lambda x: f"Row {x}",
+        # Row selector - number input for better performance with many rows
+        max_row = len(df_display)
+        selected_row = st.number_input(
+            f"Enter row number to edit (1 to {max_row}):",
+            min_value=1,
+            max_value=max_row,
+            value=1,
+            step=1,
+            help=f"Enter a number between 1 and {max_row} to select which row to edit",
         )
 
         if selected_row:
+            # Convert to int to ensure we have an integer row number
+            selected_row = int(selected_row)
+
             # Get the original data (before display formatting)
             # We need to use the same DataFrame that was used to create df_display
             # df_display was created from filtered_df with sorting and column selection
@@ -186,10 +185,27 @@ def user_data_page():
                     key=f"current_thickness_{selected_row}",
                 )
                 st.text_input(
+                    "Measured Thickness:",
+                    value=str(original_row["Measured_Thickness"])
+                    if original_row["Measured_Thickness"] is not None
+                    else "Not measured",
+                    disabled=True,
+                    key=f"current_measured_{selected_row}",
+                )
+                st.text_input(
                     "Crystal Monitor:",
                     value=str(original_row["Crystal_Monitor"]),
                     disabled=True,
                     key=f"current_crystal_{selected_row}",
+                )
+                st.text_area(
+                    "Notes:",
+                    value=str(original_row.get("Notes", ""))
+                    if original_row.get("Notes")
+                    else "No notes",
+                    disabled=True,
+                    height=80,
+                    key=f"current_notes_{selected_row}",
                 )
 
             with col2:
@@ -199,6 +215,7 @@ def user_data_page():
                 new_date = st.date_input(
                     "Date:",
                     value=original_row["Date"].date(),
+                    format="MM/DD/YYYY",
                     key=f"date_{selected_row}",
                 )
 
@@ -240,11 +257,32 @@ def user_data_page():
                     key=f"thickness_{selected_row}",
                 )
 
+                new_measured_thickness = st.number_input(
+                    "Measured Thickness:",
+                    value=float(original_row["Measured_Thickness"])
+                    if original_row["Measured_Thickness"] is not None
+                    else None,
+                    min_value=0.0,
+                    step=0.1,
+                    help="Optional - leave empty if not measured",
+                    key=f"measured_{selected_row}",
+                )
+
                 new_crystal_monitor = st.number_input(
                     "Crystal Monitor:",
                     value=float(original_row["Crystal_Monitor"]),
                     step=0.1,
                     key=f"crystal_{selected_row}",
+                )
+
+                # Notes field (if we want to add it later)
+                new_notes = st.text_area(
+                    "Notes:",
+                    value=str(original_row.get("Notes", ""))
+                    if original_row.get("Notes")
+                    else "",
+                    height=80,
+                    key=f"notes_{selected_row}",
                 )
 
                 # Save/Cancel buttons
@@ -253,9 +291,100 @@ def user_data_page():
 
                 with col_save:
                     if st.button("💾 Save Changes", key=f"save_{selected_row}"):
-                        st.success(
-                            "Save functionality will be implemented in the next step!"
-                        )
+                        # Get the Tool Data ID for the update (convert from numpy to Python int)
+                        tool_data_id = int(original_row["Tool_Data_ID"])
+
+                        # Basic validation
+                        validation_errors = []
+                        if not new_user.strip():
+                            validation_errors.append("User name cannot be empty")
+                        if not new_material.strip():
+                            validation_errors.append("Material cannot be empty")
+                        if new_threshold_power <= 0:
+                            validation_errors.append(
+                                "Threshold Power must be greater than 0"
+                            )
+                        if new_power_deposition <= 0:
+                            validation_errors.append(
+                                "Power Deposition must be greater than 0"
+                            )
+                        if new_rate <= 0:
+                            validation_errors.append("Rate must be greater than 0")
+                        if new_thickness <= 0:
+                            validation_errors.append("Thickness must be greater than 0")
+                        if new_crystal_monitor <= 0:
+                            validation_errors.append(
+                                "Crystal Monitor must be greater than 0"
+                            )
+
+                        if validation_errors:
+                            st.error("**Please fix the following issues:**")
+                            for error in validation_errors:
+                                st.error(f"• {error}")
+                        else:
+                            try:
+                                # Initialize database connection
+                                db = MetalEvapDB()
+
+                                # Prepare the date in correct format (YYYY-MM-DD)
+                                formatted_date = new_date.strftime("%Y-%m-%d")
+
+                                # Handle measured thickness (convert None to None for database)
+                                measured_value = (
+                                    new_measured_thickness
+                                    if new_measured_thickness is not None
+                                    and new_measured_thickness > 0
+                                    else None
+                                )
+
+                                # Convert numpy types to Python types (Streamlit number_input returns numpy types)
+                                threshold_power_py = float(new_threshold_power)
+                                power_deposition_py = float(new_power_deposition)
+                                rate_py = float(new_rate)
+                                thickness_py = float(new_thickness)
+                                crystal_monitor_py = float(new_crystal_monitor)
+                                measured_value_py = (
+                                    float(measured_value)
+                                    if measured_value is not None
+                                    else None
+                                )
+
+                                # Update the database record
+                                success = db.update_tool_data(
+                                    tool_data_id=tool_data_id,
+                                    user_name=new_user,
+                                    material_name=new_material,
+                                    date_recorded=formatted_date,
+                                    threshold_pct=threshold_power_py,
+                                    deposition_pct=power_deposition_py,
+                                    dep_rate=rate_py,
+                                    thickness=thickness_py,
+                                    measured_thickness=measured_value_py,
+                                    crystal_pct=crystal_monitor_py,
+                                    notes=new_notes.strip()
+                                    if new_notes.strip()
+                                    else None,
+                                )
+
+                                # Close database connection
+                                db.disconnect()
+
+                                if success:
+                                    st.success(
+                                        f"✅ Successfully updated entry ID {tool_data_id}!"
+                                    )
+                                    st.info(
+                                        "📄 Refresh the page to see the updated data."
+                                    )
+                                    # Auto-refresh after a short delay
+                                    st.rerun()
+                                else:
+                                    st.error("❌ No changes were made to the database.")
+
+                            except Exception as e:
+                                st.error(f"❌ Error updating entry: {str(e)}")
+                                # Log the full error for debugging
+                                logger.error(f"Database update error: {e}")
 
                 with col_cancel:
                     if st.button("❌ Cancel", key=f"cancel_{selected_row}"):

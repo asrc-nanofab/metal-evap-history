@@ -73,8 +73,8 @@ def add_entry_page():
         max_value=100.0,
         value=None,
         step=0.1,
-        placeholder="Enter threshold power percentage",
-        help="Enter threshold power percentage",
+        placeholder="Enter threshold power % (0-100)",
+        help="Enter threshold power % (0-100)",
         key=f"threshold_power_input_{st.session_state.form_counter}",
     )
 
@@ -84,8 +84,8 @@ def add_entry_page():
         max_value=100.0,
         value=None,
         step=0.1,
-        placeholder="Enter deposition power percentage",
-        help="Enter deposition power percentage",
+        placeholder="Enter deposition power % (0-100)",
+        help="Enter deposition power % (0-100)",
         key=f"deposition_power_input_{st.session_state.form_counter}",
     )
 
@@ -106,8 +106,8 @@ def add_entry_page():
         max_value=10000.0,
         value=None,
         step=0.01,
-        placeholder="Enter thickness in nanometers",
-        help="Enter thickness in nanometers",
+        placeholder="Enter thickness displayed in nm",
+        help="Enter thickness displayed in nm",
         key=f"thickness_input_{st.session_state.form_counter}",
     )
 
@@ -117,7 +117,7 @@ def add_entry_page():
         max_value=10000.0,
         value=None,
         step=0.01,
-        placeholder="This value is optional and can be entered later",
+        placeholder="This value is optional and can be updated later",
         help="Enter measured thickness in nanometers (optional)",
         key=f"measured_input_{st.session_state.form_counter}",
     )

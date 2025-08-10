@@ -327,7 +327,8 @@ class MetalEvapDB:
             td.dep_rate,
             td.thickness,
             td.measured_thickness,
-            td.crystal_pct
+            td.crystal_pct,
+            td.notes
         FROM tool_data td
         JOIN users u ON td.user_id = u.id
         JOIN materials m ON td.material_id = m.id
@@ -448,6 +449,89 @@ class MetalEvapDB:
             return [row["full_name"] for row in result] if result else []
         except Exception as e:
             logger.error(f"Error getting user names: {e}")
+            raise
+
+    def update_tool_data(
+        self,
+        tool_data_id: int,
+        user_name: Optional[str] = None,
+        material_name: Optional[str] = None,
+        date_recorded: Optional[str] = None,
+        threshold_pct: Optional[float] = None,
+        deposition_pct: Optional[float] = None,
+        dep_rate: Optional[float] = None,
+        thickness: Optional[float] = None,
+        measured_thickness: Optional[float] = None,
+        crystal_pct: Optional[float] = None,
+        notes: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing tool data entry by ID
+        Only updates fields that are provided (not None)
+        Returns True if successful, False if no changes were made
+        """
+        # Build dynamic UPDATE query based on provided fields
+        update_fields = []
+        update_values = []
+
+        # Handle user name -> user_id conversion
+        if user_name is not None:
+            user_id = self._get_user_id_by_name(user_name)
+            if user_id is None:
+                raise ValueError(f"User '{user_name}' not found in database")
+            update_fields.append("user_id = %s")
+            update_values.append(user_id)
+
+        # Handle material name -> material_id conversion
+        if material_name is not None:
+            material_id = self.get_material_id(material_name)
+            if material_id is None:
+                raise ValueError(f"Material '{material_name}' not found in database")
+            update_fields.append("material_id = %s")
+            update_values.append(material_id)
+
+        # Handle direct field updates
+        field_mappings = {
+            "date_recorded": date_recorded,
+            "threshold_pct": threshold_pct,
+            "deposition_pct": deposition_pct,
+            "dep_rate": dep_rate,
+            "thickness": thickness,
+            "measured_thickness": measured_thickness,
+            "crystal_pct": crystal_pct,
+            "notes": notes,
+        }
+
+        for field_name, field_value in field_mappings.items():
+            if field_value is not None:
+                update_fields.append(f"{field_name} = %s")
+                update_values.append(field_value)
+
+        # If no fields to update, return False
+        if not update_fields:
+            logger.warning("No fields provided for update")
+            return False
+
+        # Add the tool_data_id for the WHERE clause
+        update_values.append(tool_data_id)
+
+        # Construct the UPDATE query
+        query = f"""
+        UPDATE tool_data 
+        SET {", ".join(update_fields)}
+        WHERE id = %s;
+        """
+
+        try:
+            rows_affected = self.execute_query(query, tuple(update_values))
+            if rows_affected > 0:
+                logger.info(f"Updated tool data entry ID: {tool_data_id}")
+                return True
+            else:
+                logger.warning(f"No tool data entry found with ID: {tool_data_id}")
+                return False
+        except Exception as e:
+            logger.error(f"Error updating tool data: {e}")
             raise
 
 
