@@ -377,29 +377,33 @@ def create_matplotlib_line_plot(
 
 # Utility function to display charts in Streamlit
 def display_chart(chart_type: str, data: pd.DataFrame, material: str, **kwargs) -> None:
-    """
-    Display a chart in Streamlit based on type
+    # Define mobile-friendly config
+    mobile_config = {
+        "scrollZoom": False,
+        "doubleClick": "reset",
+        "displayModeBar": True,
+        "displaylogo": False,
+        "modeBarButtonsToAdd": ["resetScale2d"],
+    }
 
-    Args:
-        chart_type: Type of chart ('box', 'line', 'scatter', 'histogram', 'matplotlib_line')
-        data: DataFrame with chart data
-        material: Material name
-        **kwargs: Additional arguments for chart functions
-    """
     if chart_type == "box":
         fig = create_power_box_plot(data, material, **kwargs)
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(dragmode=False)
+        st.plotly_chart(fig, use_container_width=True, config=mobile_config)
     elif chart_type == "line":
         fig = create_power_line_plot(data, material, **kwargs)
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(dragmode=False)
+        st.plotly_chart(fig, use_container_width=True, config=mobile_config)
     elif chart_type == "scatter":
         fig = create_power_scatter_plot(data, material, **kwargs)
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(dragmode=False)
+        st.plotly_chart(fig, use_container_width=True, config=mobile_config)
     elif chart_type == "histogram":
         fig = create_power_histogram(data, material, **kwargs)
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(dragmode=False)
+        st.plotly_chart(fig, use_container_width=True, config=mobile_config)
     elif chart_type == "matplotlib_line":
         fig = create_matplotlib_line_plot(data, material, **kwargs)
-        st.pyplot(fig)
+        st.pyplot(fig)  # No changes needed for matplotlib
     else:
         st.error(f"Unknown chart type: {chart_type}")
