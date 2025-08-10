@@ -80,6 +80,7 @@ def user_data_page():
     # Select only the columns we want to display
     display_columns = [
         "Date",
+        "User",
         "Material",
         "Threshold_Power",
         "Power_Deposition",
