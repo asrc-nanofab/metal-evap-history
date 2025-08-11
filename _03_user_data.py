@@ -172,31 +172,31 @@ def user_data_page():
                     key=f"current_material_{selected_row}",
                 )
                 st.text_input(
-                    "Threshold Power:",
+                    "Threshold (%):",
                     value=str(original_row["Threshold (%)"]),
                     disabled=True,
                     key=f"current_threshold_{selected_row}",
                 )
                 st.text_input(
-                    "Power Deposition:",
+                    "Deposition (%)",
                     value=str(original_row["Deposition (%)"]),
                     disabled=True,
                     key=f"current_power_{selected_row}",
                 )
                 st.text_input(
-                    "Rate:",
+                    "Rate (A/s):",
                     value=str(original_row["Rate (A/s)"]),
                     disabled=True,
                     key=f"current_rate_{selected_row}",
                 )
                 st.text_input(
-                    "Thickness:",
+                    "Thickness (nm):",
                     value=str(original_row["Thickness (nm)"]),
                     disabled=True,
                     key=f"current_thickness_{selected_row}",
                 )
                 st.text_input(
-                    "Measured Thickness:",
+                    "Measured Thickness (nm):",
                     value=str(original_row["Measured_Thickness (nm)"])
                     if original_row["Measured_Thickness (nm)"] is not None
                     else "Not measured",
@@ -204,7 +204,7 @@ def user_data_page():
                     key=f"current_measured_{selected_row}",
                 )
                 st.text_input(
-                    "Crystal Monitor:",
+                    "Crystal Monitor (%)",
                     value=str(original_row["Crystal Monitor (%)"]),
                     disabled=True,
                     key=f"current_crystal_{selected_row}",
@@ -231,7 +231,10 @@ def user_data_page():
                 )
 
                 new_user = st.text_input(
-                    "User:", value=original_row["User"], key=f"user_{selected_row}"
+                    "User:",
+                    value=original_row["User"],
+                    key=f"user_{selected_row}",
+                    disabled=True,
                 )
 
                 new_material = st.text_input(
@@ -241,7 +244,7 @@ def user_data_page():
                 )
 
                 new_threshold_power = st.number_input(
-                    "Threshold Power:",
+                    "Threshold (%)",
                     min_value=0.0,
                     max_value=100.0,
                     value=float(original_row["Threshold (%)"]),
@@ -250,7 +253,7 @@ def user_data_page():
                 )
 
                 new_power_deposition = st.number_input(
-                    "Power Deposition:",
+                    "Deposition (%)",
                     min_value=0.0,
                     max_value=100.0,
                     value=float(original_row["Deposition (%)"]),
@@ -259,7 +262,7 @@ def user_data_page():
                 )
 
                 new_rate = st.number_input(
-                    "Rate:",
+                    "Rate (A/s):",
                     min_value=0.0,
                     max_value=100.0,
                     value=float(original_row["Rate (A/s)"]),
@@ -268,7 +271,7 @@ def user_data_page():
                 )
 
                 new_thickness = st.number_input(
-                    "Thickness:",
+                    "Thickness (nm):",
                     min_value=0.0,
                     max_value=10000.0,
                     value=float(original_row["Thickness (nm)"]),
@@ -277,7 +280,7 @@ def user_data_page():
                 )
 
                 new_measured_thickness = st.number_input(
-                    "Measured Thickness:",
+                    "Measured Thickness (nm):",
                     min_value=0.0,
                     max_value=10000.0,
                     value=float(original_row["Measured_Thickness (nm)"])
@@ -289,7 +292,7 @@ def user_data_page():
                 )
 
                 new_crystal_monitor = st.number_input(
-                    "Crystal Monitor:",
+                    "Crystal Monitor (%)",
                     min_value=0.0,
                     max_value=100.0,
                     value=float(original_row["Crystal Monitor (%)"]),
@@ -323,6 +326,14 @@ def user_data_page():
                             validation_errors.append("User name cannot be empty")
                         if not new_material.strip():
                             validation_errors.append("Material cannot be empty")
+                        else:
+                            # Check if material exists in database
+                            db_check = MetalEvapDB()
+                            if db_check.get_material_id(new_material.strip()) is None:
+                                validation_errors.append(
+                                    f"Material '{new_material}' does not exist. Please enter a valid material."
+                                )
+                            db_check.disconnect()
                         if new_threshold_power <= 0:
                             validation_errors.append(
                                 "Threshold Power must be greater than 0"
