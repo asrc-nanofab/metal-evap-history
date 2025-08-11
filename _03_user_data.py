@@ -237,9 +237,22 @@ def user_data_page():
                     disabled=True,
                 )
 
-                new_material = st.text_input(
+                # Get materials from database for dropdown
+                db = MetalEvapDB()
+                materials = [row["material_name"] for row in db.get_all_materials()]
+                db.disconnect()
+
+                # Find current material index
+                current_material = original_row["Material"]
+                try:
+                    current_index = materials.index(current_material)
+                except ValueError:
+                    current_index = 0  # Default to first if not found
+
+                new_material = st.selectbox(
                     "Material:",
-                    value=original_row["Material"],
+                    options=materials,
+                    index=current_index,
                     key=f"material_{selected_row}",
                 )
 
@@ -324,16 +337,9 @@ def user_data_page():
 
                         if not new_user.strip():
                             validation_errors.append("User name cannot be empty")
-                        if not new_material.strip():
-                            validation_errors.append("Material cannot be empty")
-                        else:
-                            # Check if material exists in database
-                            db_check = MetalEvapDB()
-                            if db_check.get_material_id(new_material.strip()) is None:
-                                validation_errors.append(
-                                    f"Material '{new_material}' does not exist. Please enter a valid material."
-                                )
-                            db_check.disconnect()
+                        # Material validation not needed since selectbox only allows valid materials
+                        if not new_material:
+                            validation_errors.append("Material must be selected")
                         if new_threshold_power <= 0:
                             validation_errors.append(
                                 "Threshold Power must be greater than 0"
